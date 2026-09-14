@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>San Mateo — ROW Acquisition Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #131f38;
+    --panel: #1c2c4d;
+    --panel-2: #17233d;
+    --line: #2d4370;
+    --line-soft: #23345a;
+    --ink: #dde4f4;
+    --ink-dim: #8ea0c4;
+    --ink-faint: #7688ac;
+    --blue: #7d93c3;
+    --blue-soft: #445f92;
+    --blue-glow: rgba(125,147,195,0.18);
+    --grey-bar: #445f92;
+    --refusal: #b3707a;
+    --green: #9ecb4a;
+    --green-soft: #5f7a2e;
+    --green-glow: rgba(158,203,74,0.14);
+    --table-bg: #17233d;
+    --table-line: #2d4370;
+    --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(1200px 800px at 12% -10%, #1e2f52 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    min-height:100vh;
+    padding: 32px 20px 60px;
+  }
+  .wrap{ max-width: 1180px; margin: 0 auto; }
+
+  .logo-chip{
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 6px 14px;
+    display:inline-flex;
+    align-items:center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    flex: none;
+  }
+  .logo{ height: 30px; width:auto; display:block; }
+
+  header.top{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    flex-wrap:wrap; gap:16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 22px;
+    margin-bottom: 26px;
+  }
+  .header-right{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--green);
+    margin: 0 0 8px 0;
+  }
+  h1{
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .report-date{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-align:right;
+  }
+  .report-date .d{ color: var(--ink); font-size:15px; display:block; margin-top:2px; }
+
+  nav.tabs{
+    display:flex; gap:6px; flex-wrap:wrap;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs button{
+    font-family: var(--font-sans);
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 14.5px;
+    font-weight: 500;
+    padding: 12px 6px;
+    margin-right: 22px;
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+  }
+  nav.tabs button .n{
+    display:block; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); margin-top:3px;
+  }
+  nav.tabs button.active{ color: var(--green); }
+  nav.tabs button.active::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background: var(--green);
+  }
+  nav.tabs button:hover{ color: var(--ink); }
+
+  .project{ display:none; }
+  .project.active{ display:block; animation: fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .hero{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .hero .stage{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 16px 14px;
+  }
+  .hero .stage .label{ font-size: 12.5px; color: var(--ink-dim); margin-bottom: 10px; }
+  .hero .stage .pct{
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .hero .stage .pct span{ font-size: 15px; color: var(--ink-faint); font-weight: 400; }
+  .track{
+    height: 6px; border-radius: 3px; background: var(--line-soft); overflow:hidden;
+  }
+  .track > i{ display:block; height:100%; background: var(--green); border-radius:3px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 860px){
+    .grid{ grid-template-columns: 1fr; }
+    .hero{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 20px 18px;
+  }
+  .card.status-card{ border-color: var(--green); }
+  .card h2{
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .card .sub{
+    font-size: 12.5px; color: var(--ink-faint); margin-bottom: 16px;
+  }
+
+  table.rows{ width:100%; border-collapse: collapse; margin-bottom: 4px; }
+  table.rows th{
+    text-align:left; font-size: 11px; font-weight:500; color: var(--ink-faint);
+    padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
+  }
+  table.rows th.num, table.rows td.num{ text-align:right; font-family: var(--font-mono); }
+  table.rows td{
+    padding: 9px 0; font-size: 13.5px; border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+  table.rows tr:last-child td{ border-bottom: none; font-weight:600; }
+  table.rows td.rowlabel{ color: var(--ink-dim); }
+  tr:last-child td.rowlabel{ color: var(--ink); }
+  td.bar-cell{ width: 34%; }
+  .stackbar{ height: 8px; border-radius: 4px; overflow:hidden; display:flex; background: var(--line-soft); }
+  .stackbar i{ display:block; height:100%; }
+  .seg-working{ background: var(--grey-bar); }
+  .seg-complete, .seg-acquired, .seg-executed{ background: var(--green); }
+  .seg-refusal{ background: var(--refusal); }
+  .seg-negotiating{ background: var(--grey-bar); }
+
+  .legend{
+    display:flex; gap:16px; flex-wrap:wrap; margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .legend span{ font-size: 11.5px; color: var(--ink-faint); display:flex; align-items:center; gap:6px; }
+  .legend i{ width:9px; height:9px; border-radius:2px; display:inline-block; }
+
+  .mileage{
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .mileage .m-item .m-label{ font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; }
+  .mileage .m-item .m-val{ font-family: var(--font-mono); font-size: 15px; color: var(--ink); }
+  .mileage .m-item.acc .m-val{ color: var(--green); }
+
+  footer{
+    margin-top: 34px; font-size: 12px; color: var(--ink-faint); text-align:center;
+  }
+
+  .card.wide{ grid-column: 1 / -1; margin-top: 2px; }
+  .card-head{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    margin-bottom: 16px; flex-wrap:wrap;
+  }
+  input.search{
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 9px 12px;
+    width: 240px;
+    max-width: 100%;
+    outline: none;
+  }
+  input.search::placeholder{ color: var(--ink-faint); }
+  input.search:focus{ border-color: var(--blue-soft); }
+
+  .table-scroll{
+    overflow-x:auto;
+    background: var(--table-bg);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 6px 16px;
+  }
+  table.detail{ min-width: 760px; }
+  table.detail th{ white-space:nowrap; padding: 10px 8px 9px; border-bottom-color: var(--table-line); }
+  table.detail th.sortable{ cursor: pointer; user-select: none; }
+  table.detail th.sortable:hover{ color: var(--ink); }
+  .sort-arrow{ font-size: 9px; color: var(--green); margin-left: 2px; }
+  table.detail th:first-child{ padding-left:0; }
+  table.detail th:last-child{ padding-right:0; }
+  table.detail td{ white-space:nowrap; font-size:13px; padding: 9px 8px; border-bottom-color: var(--table-line); }
+  table.detail td:first-child{ padding-left:0; }
+  table.detail td:last-child{ padding-right:0; }
+  table.detail tr:last-child td{ font-weight:400; }
+  .mono{ font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-dim); }
+  .more{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+
+  .badge{
+    display:inline-block;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    white-space: nowrap;
+  }
+  .badge-acquired{ color: #c3dd8a; border-color: var(--green-soft); background: var(--green-glow); }
+  .badge-complete{ color: #b3c6ff; border-color: var(--blue-soft); background: var(--blue-glow); }
+  .badge-open{ color: var(--ink-dim); border-color: var(--line); background: var(--line-soft); }
+  .badge-working{ color: var(--ink); border-color: var(--grey-bar); background: rgba(65,76,99,0.35); }
+  .badge-refusal{ color: #ddb9bc; border-color: var(--refusal); background: rgba(154,107,111,0.18); }
+
+  .week-pair{
+    display:flex; flex-wrap:wrap; margin-bottom: 4px;
+    background: var(--table-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .week-block{ flex: 1 1 260px; min-width: 240px; }
+  .week-block:not(:first-child){
+    border-left: 1px solid var(--table-line);
+    margin-left: 16px;
+    padding-left: 16px;
+  }
+  .week-label{
+    font-family: var(--font-mono); font-size: 11px; letter-spacing:0.02em;
+    color: var(--ink-faint); margin-bottom: 8px;
+  }
+  .week-block:last-child .week-label{ color: var(--green); }
+  table.sheet-table{ width:100%; border-collapse: collapse; }
+  table.sheet-table th{
+    text-align:right; font-size: 10.5px; font-weight:500; color: var(--ink-faint);
+    padding: 0 4px 7px; border-bottom: 1px solid var(--table-line);
+  }
+  table.sheet-table th:first-child{ text-align:left; padding-left:0; }
+  table.sheet-table td{
+    padding: 7px 4px; font-size: 12.5px; font-family: var(--font-mono);
+    text-align:right; border-bottom: 1px solid var(--table-line); color: var(--ink);
+  }
+  table.sheet-table td:first-child{ text-align:left; font-family: var(--font-sans); color: var(--ink-dim); padding-left:0; }
+  table.sheet-table td:last-child{ padding-right:0; }
+  table.sheet-table th:last-child{ padding-right:0; }
+  table.sheet-table tr:last-child td{ font-weight:600; border-bottom:none; }
+  table.sheet-table tr:last-child td:first-child{ color: var(--ink); }
+  table.sheet-table td.pos{ color: var(--green); }
+  table.sheet-table td.neg{ color: var(--refusal); }
+  .mileage-heading{
+    font-size: 12px; color: var(--ink-faint); margin: 16px 0 10px;
+    padding-top: 14px; border-top: 1px solid var(--line-soft);
+  }
+
+  /* Project snapshot: donut + bar chart */
+  .snapshot-grid{
+    display:grid; grid-template-columns: 230px 1fr; gap: 32px; align-items:center;
+  }
+  @media (max-width: 700px){ .snapshot-grid{ grid-template-columns: 1fr; } }
+  .donut-block{ display:flex; align-items:center; gap: 20px; flex-wrap:wrap; }
+  .donut-outer{ position:relative; width:150px; height:150px; flex:none; }
+  .donut{ position:absolute; inset:0; border-radius:50%; }
+  .donut-hole{
+    position:absolute; inset:26px; border-radius:50%; background: var(--panel);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .donut-total{ font-family: var(--font-mono); font-size: 22px; font-weight:600; color: var(--ink); }
+  .donut-total-label{ font-size: 11px; color: var(--ink-faint); margin-top:2px; }
+  .donut-legend{ display:flex; flex-direction:column; gap: 9px; }
+  .donut-legend-item{ display:flex; align-items:center; gap: 8px; font-size: 12.5px; color: var(--ink-dim); }
+  .donut-legend-item i{ width:9px; height:9px; border-radius:3px; display:inline-block; flex:none; }
+  .donut-legend-val{ font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); }
+  .bar-chart{ display:flex; flex-direction:column; gap: 18px; }
+  .bar-group{ display:flex; flex-direction:column; gap: 12px; }
+  .bar-group:not(:first-child){ padding-top: 16px; border-top: 1px solid var(--line-soft); }
+  .bar-group-title{ font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .bar-row{ display:grid; grid-template-columns: 140px 1fr 38px; align-items:center; gap: 10px; }
+  .bar-row-label{ font-size: 12.5px; color: var(--ink-dim); }
+  .bar-row-track{ height: 7px; border-radius: 4px; background: var(--line-soft); overflow:hidden; }
+  .bar-row-fill{ height:100%; background: var(--green); border-radius:4px; }
+  .bar-row-val{ font-family: var(--font-mono); font-size: 12px; text-align:right; color: var(--ink); }
+
+  /* Overview page */
+  .filter-bar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin-bottom: 22px;
+  }
+  input.search.wide-search{ width: 340px; max-width: 100%; }
+
+  .ov-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  }
+  @media (max-width: 860px){ .ov-grid{ grid-template-columns: 1fr; } }
+
+  .ov-card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    display:flex; flex-direction:column; gap: 16px;
+    transition: border-color .15s ease;
+  }
+  .ov-card:hover{ border-color: var(--green-soft); }
+  .ov-head h3{ margin:0 0 4px; font-size: 16px; font-weight: 600; }
+  .ov-tracts{ font-size: 12px; color: var(--ink-faint); font-family: var(--font-mono); }
+  .ov-stages{ display:flex; flex-direction:column; gap: 9px; }
+  .ov-stage{ display:grid; grid-template-columns: 132px 1fr 36px; align-items:center; gap: 10px; }
+  .ov-stage-label{ font-size: 12px; color: var(--ink-dim); }
+  .ov-stage-pct{ font-family: var(--font-mono); font-size: 12px; text-align:right; color: var(--ink); }
+  .ov-foot{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-top: 14px; border-top: 1px solid var(--line-soft);
+  }
+  .ov-mileage{ font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+  .ov-btn{
+    font-family: var(--font-sans);
+    background: none;
+    border: 1px solid var(--green-soft);
+    color: var(--green);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .ov-btn:hover{ background: var(--green-glow); }
+  .ov-card.hidden{ display:none; }
+
+  /* Landowner note popup */
+  .landowner-link{
+    background:none; border:none; padding:0; margin:0;
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink);
+    text-decoration: underline dotted var(--ink-faint); text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .landowner-link:hover{ color: var(--green); text-decoration-color: var(--green); }
+  .tract-popup-overlay{
+    display:none; position:fixed; inset:0; background: rgba(6,10,18,0.6);
+    align-items:center; justify-content:center; z-index: 100; padding: 20px;
+  }
+  .tract-popup-overlay.active{ display:flex; }
+  .tract-popup{
+    background: var(--panel);
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    padding: 22px 24px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .tract-popup-head{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom: 14px; gap: 12px;
+  }
+  .tract-popup-head h3{ margin:0 0 3px; font-size: 16px; font-weight:600; color: var(--ink); }
+  .tract-popup-head .mono{ font-size: 12px; }
+  .tract-popup-close{
+    background:none; border:1px solid var(--line); color: var(--ink-dim);
+    border-radius: 6px; width: 26px; height: 26px; cursor: pointer; flex: none;
+    font-size: 14px; line-height: 1;
+  }
+  .tract-popup-close:hover{ color: var(--ink); border-color: var(--green-soft); }
+  .tract-popup-owners{
+    display:flex; flex-direction:column; gap: 5px; margin-bottom: 16px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--line-soft);
+  }
+  .tract-popup-owners .label{ font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; }
+  .tract-popup-owners .owner{ font-size: 13.5px; color: var(--ink); }
+  .tract-popup-grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 16px;
+  }
+  .tract-popup-grid .item .label{ font-size: 11px; color: var(--ink-faint); margin-bottom: 3px; }
+  .tract-popup-grid .item .val{ font-size: 13.5px; color: var(--ink); font-family: var(--font-mono); }
+  .tract-popup-badges{
+    display:flex; flex-direction:column; gap: 8px;
+    padding-top: 14px; border-top: 1px solid var(--line-soft);
+  }
+  .tract-popup-badges .row{ display:flex; justify-content:space-between; align-items:center; }
+  .tract-popup-badges .row .label{ font-size: 12.5px; color: var(--ink-dim); }
+
+  .tract-notes{ margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+  .tract-notes-heading{
+    font-size: 12px; color: var(--ink-faint); margin-bottom: 10px;
+    display:flex; align-items:center; gap: 8px;
+  }
+  .tract-notes-heading .count{
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--green);
+    border: 1px solid var(--green-soft); background: var(--green-glow);
+    border-radius: 10px; padding: 1px 7px;
+  }
+  .tract-notes-empty{ font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
+  .note-entry{
+    padding: 10px 0; border-bottom: 1px solid var(--line-soft);
+  }
+  .note-entry:last-child{ border-bottom: none; padding-bottom: 0; }
+  .note-meta{
+    display:flex; justify-content:space-between; gap: 10px; margin-bottom: 5px;
+  }
+  .note-date{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .note-by{ font-size: 11px; color: var(--blue); font-weight: 500; }
+  .note-owner{ font-size: 10.5px; color: var(--ink-faint); margin-bottom: 4px; font-style: italic; }
+  .note-text{ font-size: 13px; color: var(--ink-dim); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <p class="eyebrow">SAN MATEO GAS STORAGE — ROW ACQUISITION</p>
+      <h1>Weekly Project Status</h1>
+    </div>
+    <div class="header-right">
+      <div class="report-date">Report date<span class="d" id="reportDate"></span></div>
+      <div class="logo-chip"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAksAAACRCAYAAADTh/xiAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAMJxJREFUeNrsnV2MJNd13+8MZ0ktQ7CH2gfRlonplUhKhmhPLwTLhCFqapEH00GQ6UUiQAEMTI/9ED0o3t6HPNhJMD1P9tv2BnkQggDT82IYUAD2AoklPwRbTQeCFD1sj0XDNkmL3dBHlkBITi8Urqhd7qROz6nZOzV166vPra6q/v+Awnx0dX3cunXv/55z7rlLR0dHCjzi/AtfcbwfrXtvvd5CaQAAAABgCWLplFBa9X6MvK3mbdueYOqhVAAAAIDFZhlFcIo+CyWi64mnBooEAAAAgFgCampVans/NrR/kWjqoWQAAAAAiCUIpWML0vWQj9a9z7ooIQAAAGBxWfiYJY5TGnrbWsRuV+699Xof1QUAAABYPBbKskQWJG+rB/7djRFKRI9F1YnAollz+v8AAAAAUE0qaVliEUOuNYd/NjRBdPneW6+7vF/T+/FawsMOvO852jnIGrXuf6aOrVPTzdtviKoFAAAAQCwVTRw52rZu2PWGJ2Ta/J06i5tailNd877f5e+TALtt2G/ibS5vfe87I1Q1AAAAAGJpHgKpydtmgq8ceKKloX2fhMxGhlNf8i1H3jE63o+dBN8Zq+O0BD1YnQAAAACIJdsiqZVCIJlEDlmXrme8hFlFFwmnHgunEaogAAAAALEkIZDq3g8SSSRyahkOsesJkw4fK8p9lpRZ3Xk+FOvUxUw7AAAAAGIpq0hqsEDamuEwQUuQHpg9C3qg+CyWKoKsTR0srwIAAABALCUVSQ6JB5UtpihIlhijpAKn4R37kI/tClwvBYZTAHnXPy4AAAAA5kuh8iyRS8vbyCV1S0go7WpCyREUSsQaCxufFoudWajxNQ45NgsAAAAAc6YQliWe2dbxtquChz1xvyXM0p2Vk+zeAu64M/fgbW3f3QcAAACA/Jm7ZYktKCNhoUS0tN87loQScZLdm3MwDQSPTbFVt8jahmzhAAAAwIKJJXa5ud6veyrbTLIogu63qxZvha69FxBpE+FzUJqEEVxzAAAAQP7MxQ3HnX7Xgkgi8nK/BbHpjtO5SYIMAeAAAABAPuRqWeIFaElQ2LAm+bS03zs5CSXCpjtOx7cyOai+AAAAQIXEEudMGqr0mbfTkKf7LUiYO87muW5xKgQAAAAAWCQXN5xlt5vP2BNKdT5fnu63ILo7jsTMjuXzkQWrCbccAAAAYAfrliVPMJBIsul282lpv3fmJJQI3R1H13Fg+XyUj8plyx0AAAAAyiSWvA68p/Jxhd3Qlh5xVL7utyA1FmthIs4W6xBMAAAAQInEEgdykxtsK4d7mATESbcA5XrVD8DmGKobOYk0F+kFAAAAgIKLJXZBuUpmsdoktLT12To5njeOnpZIkq5rnJNg2oNgAgAAAAoqluYglAZaMHVd2Q+mTgPFTFG+JcVirp3juSGYAAAAgKKJpTkIJXK/6YKgV8Dy3fHjiFjUDYTue1fFB45DMAEAAABFEUsxQmnAnfslb3tGyc0O63oCZMTnJ1GwUdAy1mOoWmq2pVDouw7NsuMs5VSe2962bzguCaYmqjkAAAAwZ7HEgiAolK5QZ+516o73k6wqq+yOcgQE05in5ftCrVvgMt7g5U8Ui7us1zrmsjukdAy8rh6VwdA7bos/C6OHWXIAAABAdmZOSsnpAYKz3iiWyOFOmoSSn/OIrB9t/p+rsrvsLmupAsLOXzTovutaIPpIpcsDdcBiqM7lFsxZte0dm0TRoQrPZ0Xnb/iWOAAAAAAkZybLEru/woSKq7nmdFEwna1FHbfKZmGasDDwhZJTAqHk37duUaLrThO/5GfoNmVB94/tRpy/r83OAwAAAIBtscRWoz3Dx2Q5ailz1u42d/69FKekXEVknemFiIQysKXlXhqxe/KySpZSwHejmeKyanxsN+IY66qYQfAAAABA9cSSZjUKY8KJGKOsGP5nSYKPSUyQ262tr3/GcUDrJSvvU+KOLWQNFZ+00kl4fDfm800/fgoAAAAAFsWSOrYc1WI67KiFXUf8M24GG83yavhut4BY65SwvNeDYoUEIAlBdWxlmsSIpUGEQHW1co3iOgK+AQAAgOSkDvDmzv56xC4T7txHvIWJKkojUPe21yKO0Q643PRroP9vlbTMTwV7h4hAEj1hFrNnlDnA+wr/3/TdIGMWoYd4BQAAAIBoUlmW2CJxPWa3GnfadXU2kJk66SvspnMiOnInQig1SiyU/PLphH3AVia6v/2Qjx0uNyrXa952Ux3nr7qYUigRa6qcljkAAAAgd1JZlnhx3KQd8kTr4IPHIaHUU2enzx/wd4KxST1t2j2Jgo0KlP1FLakmxTJ19an9PNMwGEB/k0VRX/vuLJnTLwddnAAAAADIKJYSuN+Mgol/p5/NCKFzSiixCCBBdchJFxVno36tImU/4BlxvnjsB8WlQTD5jP3vqOyB7nDHAQAAABJiiReppU68Zuk6yO3UDggll0WAboGhn2vzKqyjpz+llu6+K3lIPbkmCZ9NxQkmEwomCXb9bOgAAAAAOEvSmKWuRaF0EBBKFLMzYqG0qwmlzjyF0oMv/K76+NnPSx+2p/3uz5Lb02fMsXDatnhrOyyGAQAAAJBFLLGLaNOiUHICQsllYTZhkeZbmuaSH+jofE39cuPfqAefeVktvzeSPvwaW478deP8wO7rPOMvL8HUw6sAAAAAZBRLyt6sqXGEUCK6WixNW9mzbBl5eGHNE0pfVw+ffva4sO7esXGarrYMSUc9yrW0xYHfumC6ZulWN/zs4gAAAABIIZY4oNrGzDMSBE1NKNUDQmnsx9HwZzt5F8yDFzfUL3+npY7OfWL699L9Xyh1/yMbp6qxGPStS3qW76u+5Yk/p8/2Ld1yB68DAAAAkFIsKXtrr7X8WV9sVQlmBO/MrRM/94S639hUDz7nnPr3kh2rkk9bsy511elM3nu6YGJhdWDhGmBdAgAAANKIJbYq2QiovuEJpb72N/2uT30f+7PB2KqUXwJKTyiRNenj53JfDUS3Lh2GiNSuv0QJf95U5qVRZqGDVwIAAAA4jTF1gKXkjwecodo/B3XOQRfbtiaWenmJJUoL8Mvf+po6ejJ8/V8K7n78u/s2L+FkGRS2Mo3UaWvbqZxIFlMKlD5R5VMvnljI/J9UZkPD7nXe8qL38zcfJR8F1cOrfzSYwfqLj967Eeo8KDsrBqHkKDuxSq3AOYJCaS5WpalQ0uKT5oRvXeqwYOoGyoesfFQ21BBPA77Z+ic9U5GuoXRiyeugSGB2uXxqBb/cDpqeygolW4OYspcLLXvV9EQTEuCCUrIcJ2oE2Q2JU4rqRHLpUD5+br0IQulEqETELhGbeg4mfk7S7rjNsuVd8hpiPzfXVgmE0hDNTqVpowhC2TC0+QCUUyxZsuiMA1mieyGdWu5WJRJK9xvNRELpiNMHWCYudmkqIn0xw/vYEJWlafBZKLklEEk+GFlXFLZurqMkIgUTANUQS4rdPMK0NDHmqHDXkS4MOrZv3BdKSZkKqnNP5DIyjbEu1ZSWRJLTCRzYel4loFcioUTAslRdmigCABZHLElbFQaBgOFeyD4T//95WJXSCiWfh/OxLoWZroPT/KWfWY3joYo+km+VbCR/AzEbEEsLzARFACohlnh6unS6gI52/Lbh+Hq27lYRhdJULMmvDWeiHVZ+AU5EJ4vRgfA1tEpQf1slec9oJuOuJ5QQz1JtNlEEkbgoAlBWTqUO4BlYVwWPT1Ylh48dNh3e55mIKfNi0Ky3jza+nr2wPjxUT/zPG3k9myQpFPR9qJxvCV/DM5qILRRPvTi1QL4jWVdZgI4kr9MTSOggFgBOF/Ca0OGmi4vrdYfjoRo8QJC0vE94cNYnq6d2HqIp3B9se+foobaAMhJMHSBtRu5ov5vWd9vXOmRr07799AAzHePJ1elxlu6+m8ezaatH1iOTWOr4+5B1yRNM1OFLBlE2VXEX2ZWsq9e8RryL5gAUpD42g3mJ2H1L4snlSQ3rgudyQ86jtHNJtSmYDQdKy4kbzoIL7iAQq2RyQdgP7ObM3BLpAR585uW8ns26H5fE5RgWxL0WWApFWtg4Ba67LaHjDCCUQIHE0s0cEziOE1g+64L3hXg9UH6xZKFj7GpCjDq2mkFQ+bmXHGVneRXRPErTuKV8ZsUFBcF/MexzIkLZJTcu6GhZDHbBSY2se2gGwIz1UdIi3sux7ndjziU5gIZVCVRGLEl2jJPAy2GyKn3HgqXgFLQoruQsNhJdDy7mZl3a0tII/A9v+zBkn/XAzDjJRqnmr0lXMKQCpSeIoQAFGlRQfezndK4kbYWT47kAKI1Ykox16WtrmJn86+9525/xPiQIxNMF0Mw3G4vifkyuuJytS155ksXoB1H7JBktZsApYL2V6jDQgIOy1UepgcJBAnef1AAWLjhQDbEUsExIv/SmF+6NQGC3KEfna+rBF161UmhT69KLuWkIvfz+o6mx9i1QXplSAyiZpLJQYgmuAVCw+ijpguvnWPfjXHB1Jefuw3sGqiGWhDvEiddh9xOMur5pYbR0wv0vfc3qem8U6E0z43Jg3XeFeeX6196PvwvZpxYo515VxZLgaDeJywOAOPJ0wbUEr7tI7j4ASiOWGjZejIgZdv/gdfx/wftIjmCOhcyLG7lk277/0qt5PSe9kfzHBKLGFTx3rWAL68IFB9SC1kfJGXdxbjEpYTaACw5ALIXjJni5/97SCGbqfvs4p+n9Dy/UvXP9dt4NMrni7kXtwzMMJWfFFSLIGy44UCRK7IKLO5fkABbvGaiUWJKcsp9ELP1XW2LpwUuvWnW/nTnfi85UoFlmzbfusBAahewTnLnmVk0sKbjgQLGACw5iCSwIK8LB3WMOMPYJG5286+3z3+kXDkoWm4X38MKa+ji/9dumkDC7f6mpHv/ufh4Nsx+U+aa3/XrIPvQs/VXt6afUDEOnIPUVLjhQRbFUVRfcQY4JNnOFLX2rMx5mVNXyqaRYUnIZWpXWUUfNsBva6oQffG4+fbrvjnvsR9+3eRpHE0sU77UZs89Q8Nyr866ocMGBgnWWcMHF06uwULotcKhthaS4pWHZlliKEEJvar+LuXfIqkSiZV7c/8KrtmfHnZQnB8d/ELJPQ9vHFTz3egHqqtRoFy44IEFVXXB5nmvRnz3aoQUWS3oHbTrutxIIqtTMy6p0SjBdsro6SHBW2ihkn+DoUyzfkpZJHA0UWGieelE0iS5ccOWjldOzABUWS4cxYulDzhXkI2JZIovOPK1KPpSugNIWWEQvrzcNosYxPA/Jc+fdOcEFB6poWYitjzm74CTP1auoUJYqI7RDJRRLYviL4kZ0rsEcQSI+/wefebkwBUoWLovuOL1M3zDso1uA3ATHHJegnkqNduGCA0USS3DBlY8WymdxxVKUxWDgbZd4G6Q8dpgQuuP/IjkL72HOM+DisJisUhdCHycQVCrm2V72BG6dfiZ4vvN0w0nVFTRQYFbLAr0HmznWxzxdcFLnqrILrpnTswAFFEs1g7XhiteROmQt4o06rCsRloiBJoRMHevPpG/g4bOfE8ur9Pzdn6rf+8n/nv2a7CWr1AO4/zTB/kPDs93m5zli0eo/3+2I5zsXNxwS5IEKdpaJ6iNccIUTynDBLbhYCrLLHeOh15FSZ3rEm6uOg4obvE+iTj2AeLZIqbxKJJT+0/f+s3rq/j2R400X2j33xDyeqS5Ug6OXbbYkufw83/G2W972gfd31/usx59vV7BzggsOlK0+Sq6ZCRfc7LRQPhBLSrNYdNRxcPatgIqmyGVX2ycLb0jfgERgNwkkEkr/5MEv1FtPf1rkusja9eCi9ViqeymEKj23nvayBiPRr3qCqR3Yr0oN1BCvO5jRsgAXXDxwwc3+LEAZxFLMiKY2Y+f1c8mLp0DqoydnC6UhoXTj+8dCSZppsLfdpVDupv0Cu93WcxjJSnROdSXngoNYAkXoLBOJpRInvexV8cELlpGL16haYqke8Z3Volz8w9qzMx/j3/7da+r5uz+zdo3Ci/oGR2zS0+7WClY/JTunFjd4AMy7PiZxweW5Plsrx3OVlRbKZ7FZieiUTQmDpEyIMx/n6OnZxNIr7/5QvfqTH5z636X331bDC8/LiaXnGmrlTW8wcf8jG2JJutwPClY/JRtxGqXf9gTTWLAcaZTYS2NWZ2sZdYROAQYe/vWPYq6ZrrOtirNGoA9ZC4fe9Vu3ZsAFl4iDBHXJr/8NJZvjL2t76iasP1Jl1PPKIFNd966znaCe+m1LowBlO5yhfSxc/TCJJfowLEPtZEZlfLL4K82wO//CV2a6k1ksS+R+++ODP7de2hS7REHoj/24GDqEy31gEMOdgnWGNpZZWVNyFjTqPNveC+4kFBxdJZf5WQKqAzvetW3HdBhUL64WcLC3wWU7FXKWY0HggksgBGLO1S1YPaL6sxVXf4TLKGvWYjembNv8ntaKVLZ0Tdw+DkvaPp7UjzNuOK8jbfG6YtssjnxoRE6pBGiGXNYRv+j0sKPz2QfmXx0NQuOUaFacNIKuuOEsL5X33Dqc1oEa4/2ACKaZcn36nPabdy2lF0yVg7UEnUSDRylbBb2HPR7RmRqxqwV/BiSqbcfbwQWX8VxUh7xtWOB6tB5TDq0CXGM/on2h9ud6gYSSTi2BYF/lfmurwPWjHRaztMfTyin3Dt0EJSy8xFPKFX+2J9CpE4NZ7iBrcPez995Xrbf+yviZNLQMilAagUNN+PzzBPsHO8Ad7rRJENO2xNsqzYDj2XAj3g8IjBa1hqBW8Huo59Bx28SauIYLLhFRLrieKsZi3FnLYd7vwMRkmWGrx1bBy3YtZvDrlqB+TC1LE0Pjf5ty77DwGfHvtyM6hpP/ex2v6QX9YuDv0TzuOirxJAV7h+VaIovTLFYniXxQbPE7uaSMHSB12tc5h1aLhVeL/o4ZneQ6m8xrHFxD3Swb/RIIpbysHOSLvsmDpMmClsFCueC4M98sa+Xn5zHviS9uhIjvCJ/rQOUYu+rdQ6sEQmnKckwneJUFzUilN6GGZYJemlcHrAuguCzdFOQd/C7lYfqVGaxOswajh1Tgl9O8WGFqXx1bEY/UsaUwrkGYR26QtioHY0ND4KjsMQqnRpbeds3bnvFE5BJt9Ls67UqdlUOLFhW6/ivedTe8reltFMPgW62lRJNr8fnCBZdBLAl35iSyL/n1n9+BKznUnyJYVt2I51cTej93uX2hd7TB7ctA8B5Gltv4A25jbNWPRAvp1pI+EK/jbcQUzkUxsZTSrUUpAgiaAfepex9E7vtlbx+dP/6bP5/GN81iWRJIcxAsq08k6PScMptkOOj4MouCQYEvtW+5ISCB0dVdKvS7t0l1dmODmV+qo+iEiQS2HvZyEgZZR75wwWU/l5SV7CaL7GGg/vRzqD+SYinLouWDiHuUev9p8NIJti+Cxx+HuWjZsilhVTpgkde3WT9WVHSagLTUtU59GHLcJz1B9c/uvfX6X9If5FbKPCMuxVR8ikOiFAHf/vSXVOO9t2P3f+XOD9Wf/ubx77T/l99940RE7b2QbZFcgUzjwdHFZ8N2otlu2p9iU9MDLsA8BZMrbTVgi8+tHEbVEp3sgMvA1JEXvaOYKPuJCidxs21mEap5WXpK7IKzLTSiBh0SU+RDBwuCz4MGe23J2ZqCCXv3I94dqfbFtSz28rD+9ZeVbNxQnGWJ+JfBUYPtu/zqO8dGCXKjNd6PF0tkRfJddb/300cuO4pnshEALiiWgq66UviC5yTAxEaLhsbGsSXELDQSrkWx14/pJCTuwWaiP7jgMpxLsP4YA8f5HBsWy0pqsNC2kNZC6vlFtS+O5booUb77MWlbHKk6GBezNItYMh33uRwbuimvsFuNhFLSbN2vslgiK5PO9lvfmUf/fkApG/w/zr/wla/Rj5D9hto+juT5qySWBC0yUfW3Yfn4Yo25oRNv2r5+weBZuOACA9AcXXD7hnPlMViwfQ4RIW8p/5eEWBrHDBwlwghC2xdBy2ZU+1IXMhhM6weJJckHedJBRLhtPh83qk3K0v349dwozsiPUQpm6468kff/cWqRCuZiomNkjV16eGFN6mX+F4b9hhY6a2KkqoXkCL5nsSG/EZEoT8zyY7mM3DmJvaLVk0VzwUnU/zgXrlT9semCE6+bgs+vl8M5+hbFXty735Ks48vCsShr5184ldwuLCj3OYpb0kQVdcSZXHFLd+/E7vNKIFg7DSYrEgV8Z2H5vbFUhfuNBB2TI/hcq7YIrVTZjC3FykxYKLVz6MhtulDiLByOjesvoFiqqgsu6r5mfbbTJMhzrD9FFvJSz6+XQxtps3zzqOcnbuAVrWJKjTQc7SHQzYT5lH/f2/4ycNOpG+elD7336EL0PrPMYAvL8H18zJ9NrU7furihcmAQcMFR6PlLYY1LILgbYmkOQsOHpscnGB2GuQNHcUun5NCY5+GCs26Gn3H0DhfcbPfVThMbGEhaOEqwfJDt+lPkWDqJa4tbx6/sLjhx69uK1hmuCT7IXoilQ+eUyuDs0ZT0MpXZcyqW4l7CkASTEpDV6du/9iX183PnbXfsQfX/R4b9XE1QNZRsIsTKiCVhd0cv6xdnsUixL74MLjjrJnKLLriW4LG6OdbJIrjgUk+iyDDpQuL5mDrzRXfBOZbPYe3ZWXh/T86xHCNqsuBoIog6hDDf06/qrrgkDUoYy+/FD8Ap9sgGZHXyczdJXWsIZC3qmco34sWUNOlPdMtWBZAqm7HF6ep5deTzdMFJPIebJSjjJPWkai442wOeutB9wAUXTsfyOfKw2olb35YtWA5qnhBqJiiwPwkRS6mybc4QAyQCzZRLarlKYgWLq2wsMD9rEDS2xJKrqkUeVhObHQU1lhJr98EFF90Zr+dYT6rmgrMtlKSWEFpUF9zNiIkj1OdIxJeYcleV0gVHTN1wMyWHND/QvnbCsMb9JVrh3l9Hjn6yKy5VR/DYnb8XWXctC2RdogBycsfFC7tR6s5MnbW2/UncQ2UXnGR+pcqIpXm44Nik7Qi+V7Y7calRdc/26DjmHEUQ1LH1JM86mZcLLqT+m+Lz0uIouQTKtl1w4nVT8Pk1vGO5gba9zuUrVT+6Ft/93F1wJ2LJV5tKLqCx6QshcuF4vw9CKjlVSAoi6wQKuJ2mspIImZdYmta6999OJpb+b2qx1NYXJKbyVOGB3cGK2RK+xcqIJZWTa4VHvx0lt9yDDWy64PIwke+XvZ4IC7Mkbp9WHufietRO25bPu/4LPo+xcOJb6ee3xputGUpjZdcF5+bwTp0JgF+21CnWAhdsUpltFgFTWBx00pzosR9Ht0X/b+UTVt+4Zz+Mz+i9fPeOWrqXysN4EBKrZGp4BoGYIkmxNAnMsCstec1uYjcZldlWgTsKuOCihW4ZXXCFOBc/X6r/OwWu/7bFUhnyfllrW9TxWpaH83j3bQbAL1t8wB1NBPVVeKC3b11S2r4krJJnjL7/0dQVZ+Ktpz8999rz2I++l/Yrp8qEc1ftxJWzt19LuIHqq+og2dB0I4TSXsE7CdsdRR4m8rIkouzFCLNKzYLjAYkreJ5cBwsL4oKzLZScCGtqK4e6bu0cy5pIGalsqyKbWAssudExCYNAIsvUNxwlRt6es1iiwO7HfpxqtZAbIYlCTZa5QWDftvDlV0ksSb1EB4YVtOsqw4zOooilkrng+iWoJ1V1wUWla5AKvC7zYMHWLNlWgcuTRNKut9Vj7t1qcLrgOULb+JWQSnRVsBBJIDksxiiXUidEHde4k2lqwm3o7burEgZ706w4il16eKF+5rPhhefVvxq9bq2W3Hnyk5Gfr7zppnpIQVHJgnMzonz1/SQDu4Mz7EoLCxkp/3wv4llIdRQHhgZdIgYELrjoegIXXExnFfFsxYKv1bGFKphkt66QiHJWBkou5IYExTCJOCy7Cy5MLPWExdIGdeKa9YMa+7DkRJuUbkDvnL3fOywAEr2AK//gql/+zlnxffuTz1vtiIcRx6dYpRRWJWogWiFB3abOOWhV6uQ0+iojVvPYcCe7JXT87bBZXmz52bH4XOGCgwtulnNJWbUpcL9tiHnpCbxni+yC2/XuvaPmQyuHut62eQ49ZslPIim9wnxHO35fha8XN61kerC31nglcg2SdSks2JsybH/n137LWg24fcEsls7dTtWmt0OCqTsRL0lbE1VNJT+zAS64s5iWCJDqZHcjpsOXYS04uOCOqawLLqL+bAm9X60IN4vN+lNkF5wjdJx5hgmU2gV3RixZUsYbHHgcp/5qwYrMVpamSpis8tzffic0+eO3P/0lK0//f33qJXXnfLgb7tywr5buvpu4kwzOfmMBZLLy3QgIK+mXYFwxF5yUa6Vn2WLSsdwQwAWXTz2prAvO0FlJibFOxPOxvQRJkYW8RPkeJEhYaqsNzsMFZ90yuGLY+bpweZFLrc95l6LikUhYdcgFpwmmIbvj3NjCuP+RevwHf6E+2vj6qX9T3NLwk58VX/pk74VXQ/9PFq4U7rd9/X5ZKDUiHtpYnY5V6ij5WRI9VR1su+CkkoD2IhoC25YfuODggpvlXHk8W2t1lBNnFtUFJyXi3YTnc7KeICK3VCuHum598HHGssTWHOmEb2vqtDuOfjepiZ2AJcp3D9JDjLUwkTWHrDpB/v0X/1A059J/q38ldKYdCaVzw8RLVpFQagWEkh+nZHp5T+KaeBah9Ay4qoklR+g4Nw3m2VYOZQ4XnN2Ru+RzXDQXnFRnHpfkclFdcFJ1JXIwRvFg3nbk/Xkr42ZbyMzVBRcqlhgbvs2rbDHRX2KT+NkL7JtKMJFVJyiYKHbpj17+hsiNvP30r4ZalVZ+9D0JoeRGND7BtAI9JT9Vd79iC+faTkQpNeK1PeUWLjj7o/ek12i9A7RwLlNnlce9wAVnV8jRtc8ac+ZGvFuld8EZxRILk4GFB9/3g7j5HFFWEVdaMJEl6M9+81/PLJSu/vY3puLLZ+n+L6bnWvnbv0p6mN2gUNIelqnRpqzeelA3/W4jXX1PVQROEmlzVJ2HLx4uuORWlHmP3mPfnxKvBeda7szdeQwWiizkc7LaOUL9SN/yuzVXF5xRLDEdC40SVcquJn7oZb9h2LcWIZioEsUGBZFgemLwzVNB37SO23/44h9kcsmFCSXK7/S4d46EMUok8rZDYpRWva0X0SlOlOZO4jKx8XwGIQkxyyqUVpWchdR2YOtcGgK44MSfY54uuCTnsj1YkOrM3TkOFqTKaNVCvXRyENVS929TTOfhghtEueAixRJ3mjasS1t6TBJbS27GCKZm4NooULwRIbROoBimJ17/5jQPE1mAiL/+1G+oP3jl302DvhPXthd+95RQIgFGweSPf3c/6bpvpKackFlvvuttK0ooaXFKcTFNs2BDgM1DKFF9GSr7QbQSjdncAltVPvEQcMHNYRQsfC5TLIdUZ+7Osbyk7qEzS3C0xXs3imrBWLCoVQ1sW8akFmvuxe2wkqDzvGWhjep6nf5Qm/7eUuZYHSqI17z9t4NCg4QWzbLjGzU3yPc/UitvDtTKO99THz/XUA8uvjzNvH315W+oxntvq6+OBurL775x5mvvnn9mKqy+dXHjJEUArUNHy6tQXqcU7AatSSx86lwRoipUK5AmoKdkM3WfKOs8rEqaxadu6RTSrsmJIUmkVEMwmuOoOo8V1ltC56iCC66lyumC6+VQdrnXH2GhTMe55R0zi0XDsfjuR1lkupaFhtX6wXVcaoAf275EiiXqPL0OfWChAzpxsVEwMVlNtPQApsq7x9nAWyHXSIVGCjM6wzEtuvuj70+3o/M19fBXPq9++PSz6m/q/1Q9/OIfqufv/lQ9df/edFcSU++uPKmW7t5Ry//nTXWOsnHTgr3eMdK8CCo82aS/PEncWkrber6jGFddWaxK9IJuqfJg2xe/zpmJO/rojBtyaxlp4YIT7YwjR/AW6szcXXDCVpmuVx8PdUGjdYQSfc88xV5WMeMIti9Ujl3flcUWMKmyneRQvqfqB7eNLSWzogGxnyQH1UqCA1GDfdtCJZkmoWQBdJhQMG2xMDplbWEXVYfFRCdJZ0yus6lw0v73k8A+T8zQmLFICm1kODdS3IM+ZUlj16UtkbGfY6xSmYRSVEO7KlwmWxlGpYkas3m54BgJ64aVupmnC05QnCYVj7ZdcErJWcmm3gOu/2OVX964VTV/THW7IXgO6mt2LLUv3Qih0bBQP+ZmKFiO24FFyb6li6SGytVmyB2yoj6I+c5tFhzBax2x5ekiX/Mk54pPlqQr3jXUw4QSCT1yP8YIpQkfIyiU9ixd80TlZFWy4NO3zc0IF9NhSe6hjLllkog9CSTrY68o5xJ2weW9RMaahfozKuH7WQYOYlYdKEMbeS1p/VhOeMC2ReFhEkxxAo2SV/rZvU2iiUaO28ocQC4BjYQo0Pyid07HIJJoths1OrdjRrJ+MHc/J6E0bQwrlldJrCFQ0a6MsjRyNl1wbhLBWeDOJE+3WNVccP7gsOhE1dF5t3s3Ijpqt+DlepBgAFD0e6DyTzwYSCSWfDdXVuVGlhIWP+OkgonFzm4CoXWLgrw5WPrMdZOFxtuooXqGhdO+mm2x4Al3AHRfl9iK1A4THCySOvxSXk1Q+Rq6ezFGKPnXMcu9jMMCzy1SFmsMiV8nyo/Njdy1gt/HvF1wituNieVzpEbYLZYktqyRY5lLPd/tmFgOm4NoscFgxDvcszyQjoLiZNoR1+Yqex6dWdmNax+1d39cwOuna7oSVf5hLB0dHSXe2eu86QGmCQrbDpkq32BFSgVZCxvNBwSDo+IDoU8qIDUmSeNv+NirgYaszpsbGIHQNvSn8Mccd5UbknaK627rx2ZL1NWQkRxdV98vowRZv6O4nHdeJa+T6qtixAqEjYLoGffTLDjJrsWmko0xkBKmnTArBAd8OrOWV4wJPihMWlxG9RTX37PlgtOCXGct40TX6J1P4j2j+tmOqp8chyUhMHths0CFnm0ejPge3AT30OT3oZFTO9NP6r4uUPsy5C1t+7iqXf887+FQu/5MoQNpxVJdJctfM1GP0gF01aN09aTiO7w4btdgbaHvNvVOnAVBP4VQO+Dz9pOIGylYfNF9Jw1inrA47AfuNWzG2DT9AH/e0gRHjytCWsF0Q88IDgAAAAABscSdOXXUezECwGFBNAzpwCeaynwt4jjXvGN0Q86dNjfETRZaro3YHE6Y6av/tZTX1QpYk+rKnHfpsqbug+fZ9u8xoWA64KSeAAAAAJAWS9ypU8ds8vffpBihGFE1dTt52wcZBIXJ8pKEMQsKX3QM01ie2HJU541+z5Kngqxe7aD7K0YITrz9/SVRtgwCtc6/D2NE24mYRfUHAAAA7Iml1YhO2e/YO8o8RZ6yRTsGy1NY594KzjJjK0xHyeTtIRE1ivh8Q+gcHcNyJz0VHWzqC9BDZbaqXeYEnXEP9EwcGQAAAADMLGf5Eltjmip8JkSNg7ijLDb+Z26C0/nLnZya8RaSU2kW1lgQmbZZRdI2z5oLCqUWi7S4WTmuVhZRItaJOc4+hBIAAACQg1hisUJWIVOAMHXafWWeVup32PUUpyRBQXFQfpBzmGjaVcWZqkgC7rJBJDk8s3BPJYu/GvHPmzH7RE0ZPgguFQMAAACAeDK54QIdf0eddbf5bqMmCyNdENzgBXDp/1ldaKEuLV2MsHBIG3Q9K34weegsPLaMdVX6/C4TFqD+9MegwJq61iLcmlRejTxnBgIAAAAQS6dFQFD46DPi9DxGZAUazSiUgiKAxEfPJAS0vE7+VhMsvwGLF1cdz7Y7jBBvbTVbEjxfMI3UcaxWg3/vcawSlfMHpu8hoBuATG2b337RpucHo3f+EO8VABBLswomX8xQo+JP3T8UFEpBQUDn6MY1XiGNX7ARVPy/4HHob9+yM0p4niaLpHXB+3RCknb66QvWIZQWphOn530rZrdLwWef8Hupk5VGJKzdTZslPuE1Buv5tJ2Risnja+io+JjFMQ9YOpaeYVJSlXOCiSBR5dzOmoYl4SLikXjnXhJ4vi1lnq1NKxvUq/aOgtlYETxWm0WG3mGvsTDa4kpwICgcdGr+ebxzjFk49cJEAlt/XGVh3RpNING2aek+XU7o6SRoyCGUFhsnRPQ7FbzPGr9vm9wJNmdxOXvHoLbsesLdqY3b8fOtVdzV7ZczxVy2wtbBLBFRCXnX6HnmdH+L8o6WnmWpA2kL4EatVbaewz1R40WZwW97FX7q8qMXO2ztOKkRKAedk/j6gEcrmxbvr8YjszihtA2hBLGU8H9VYkNp60xmeJ+bKYRSsG3rLEi98mcoN8t48dwXxPVFTbyjQEfSsqTYzUYP2s1JGCURTrpla6IeJaT0LUzEKMqsrE3Jr/Pmr4O0XsBnema5GLCwbBrERNWh95Ksr60M3zUtvHrA7UU9YjB0lQZOCzSRgsRhGa1LSZZ5Ii9FO4dn6SzoO7rYYskXTCQmLMUmSYyI9NxJO5ogqsLzRIwSOCP0feGcIA9XGdjln37c4VpEZ9dJE1vD1ihTot1GYPB0K8Ii0Stz+fqxT1weDgvINYMoleIgoYiRoJliP9vPcpqXUFsYvQrvKMRSStHUYgGyhWKGUAJzgxpfN2IUWyqCQcwRC3ITLZXONdaI6NBORCfPPh3woCsu+3/UvdDxlgzCzRSAnVtgLw98+zyjeMfy6Q7zuC92Ha4Z2s/gTOl2TsKXrmlYlXcUYim7YKJKcB1FbZUDVf3gUpAMvxNXIY2vE7NvGcVTm0fj6wahmIaogcYtnjzi8taysTB3QVmt0L00DUKpFyK613Wrj3B7vW6op82qvaMQS8kbsy4FWquzySmLCmXeLpM1bLooMYQSYNxA42r6PWzfstI3iKVU98Yxl1GdUzAG0p95262QcKoHXEFNZbbcDQTP2+BJMnG0s4oXdituGepP33CfLSXvHnQD9XVDu771kGuDWFoEscSNkG/KNTVqRREdHU6a2VFyi/Ta5BqJ0bJUtoy5XSqNRM6YkIZ4J1DujsE6cGbfEgtEqfug9z5p7iN/5i0Fdt/g9qPsg5atFO1eR/C8tYSiYBYrlylWqc+u1TBXnA2xdEaYxbyjaIcL0A4v53gxNPKiCnGjYOVEo6OLvG5anYXSqrbe3KCAz5ZGtJfKJJRAbu9ZWOPqqLMuqQlmTBrL74oyr2tpgjq/zCkLSsh2CetP2zSY10TMGREnnSIh5TuKGNSCsJznyWjURTEGGRsjG1Cw5FTRs6vwFo9Qb7NJ+JA/v1ygZ0YWsAZeIhAzAIhriCGUzO0UdZp1dTzzLk07ta7ym9E1z/bnslSm9LyIyK2kL05uSoPQwjsKVuZxUnbLUeWlF25zXjevKXx6SYIzJMgkPM3VwibaeT8rsia1S541F+SDq6JjlarWEK9aaBvIndahjV0k/hbnKmqrcienHKv4xceHls6bRICNMh7fJGL7Cd4Jygy/KuxiXbR3FGJpxsaoyQ1RL8ELamvE4UScuygZaqsSDwHyE0s7CfapCqYp/5OMbUJwvcihlqvKX9KIBlJhE1bIbVMvccB3j++NtrDYpS31KMeVJKMs6+ulwNSW73nPay/B91vKnLAU7yjEUi6iiSqEHyvUVsWaMTfvayFTbbsqLjcLwczA8E7FWEIrEwvB4sVkNRimPNbIMHC65neUPGDpcfmaOtn6DBaQItSfQ14fL7jWp886J/zslKSONAUG46JiaZ7vKNrhbCwX6AXtcCOzn/Opoxq18ZyKg857heKlEJsEZhDalR6xsgXIjRjUpHVZDyM6ysTtRhUC51kURsVf7dhab9MCEh6Cda5veEcXlJUCvqCtPKfuc6oAcnOF5djIO1iTRFKnbMGToJBQY7tRtYY4xbRnP9FgGkhcbRo6yj63B4fc+ZrahoOqVKBApvIwOkou+HkjxbNNnMU8IrdSFlrCfUIl39GqslzQl3SkTd3fV5ZmzlEDyPEF9ALsqkeWpAG/kNPPuaG0bQWgqbh1CCUg2BAv8qg1S6LWfkRbQyLqHW/7QB2739YjBESViLqfrRJYl1oRA9NdwzZIeSy8owvASpEvjoMkWzw68FW9ZCA4NYA008FPSNnRhFQ9h8WA6bw95LsBlqwCYR8tQu6WG1kGHRyrQ+3Ma1nf56rNVuV6FLWqQUfZmVpvWyz1TTFX7G67HfLRNOeS1DNe8He0dCyX5IWlfEe0pACNYi4reWsTNQRDcv+xSKKXaGhJKJGZngJGnyHrGYQSsMjNBRux+glmM7tKuCPcztC+7LI1vIp0otrOolqXWPSYLID9iDowjHj+LQt1NvG1gfmxUrYLZnHh8stAsQP+NuvMNfr+jrKz/AMJpB6PZkaodkCAQxWfXZ4a3dWYhnhgOHZaTCPhkaV70/cd8rslMhonqxS73lvctjQM7cuAz21jbbhBxP3aPP4opDworpPcU47hO34qhSSM1OyrIiQtg4bpXAkGqV3D/a4K1+NeArE0sFgPQEKWjo6qsUwMjyKaKlniONvoq5P3kR8JAAAAgFgqonhy1KPkaXWLAmrMo0t/cyGOAAAAAIilsgqoVRZP/k8V+N3ESD0yT/tm/0ME4QEAAADV5/8LMABn5zbIJ6thUwAAAABJRU5ErkJggg==" alt="San Mateo Midstream"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="project active" id="proj-overview">
+    <div class="filter-bar">
+      <input type="text" class="search wide-search" id="overviewSearch" placeholder="Jump to a project, tract ID, landowner, or county…" oninput="filterOverview()">
+    </div>
+    <div class="ov-grid" id="overviewGrid"></div>
+  </div>
+
+  <div id="projects"></div>
+
+  <div class="tract-popup-overlay" id="tractPopupOverlay" onclick="if(event.target===this) closeTractNote()">
+    <div class="tract-popup" id="tractPopup"></div>
+  </div>
+
+  <footer>Survey Permission and ROW Acquisition mileage exclude offline segments. ROW Acquisition status source not yet available in raw data — figures reflect current tract status only.</footer>
+</div>
+
+<script>
+const REPORT_DATE = "September 11, 2026";
+
+// ---- Tract-level detail, deduplicated by TRACT_ID from RAW DATA ----
+const TRACTS = {"BARNETT LOOP":[{"id":"BL-TX-LV-002.1","owners":["JONES P&M FAMILY RANCH INC"],"county":"LOVING","state":"TX","ami":"BUFFER","rods":0,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"BL-TX-LV-003.1","owners":["ZPZ DELAWARE I LLC"],"county":"LOVING","state":"TX","ami":"BUFFER","rods":0,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-001","owners":["LARRY R WOLLSCHLAGER"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":243.6905522,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"BL-TX-LV-002","owners":["LOVING COUNTY-CO ROAD 300"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":317.5709529,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-003","owners":["3:16 DISPOSAL SYSTEMS IV LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":8.486175968,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-004","owners":["JONES P&M FAMILY RANCH INC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":8.98756822,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"BL-TX-LV-005","owners":["3:16 DISPOSAL SYSTEMS IV LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":77.11962818,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-006","owners":["WILLIAMS FAMILY TR UNDER TR DECL"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":81.76064679,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-007","owners":["GEORGE & BETTY GRAY LV TR 1998"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":81.60901159,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-008","owners":["JUANITA ALLEN BARNETT IRREV INCOME TR"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":55.53375549,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"BL-TX-LV-009","owners":["JUANITA ALLEN BARNETT IRREV INCOME TR"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":4.116733021,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"}],"DOROTHY WHITE TO MENTONE CS":[{"id":"DWM-TX-RV-007.1","owners":["ATCHINSON TOPEKA & SANTA FE RR"],"county":"REEVES","state":"TX","ami":"BUFFER","rods":0,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-009.1","owners":["ALICE CALDERWOOD HAWK"],"county":"REEVES","state":"TX","ami":"BUFFER","rods":0,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-014.1","owners":["ESTATE OF GRACE GIMLIN"],"county":"REEVES","state":"TX","ami":"BUFFER","rods":0,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-LV-001","owners":["MHKERR LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":113.1307747,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-LV-002","owners":["LARRY R WOLLSCHLAGER"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":154.123073,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"DWM-TX-RV-001","owners":["MES LAND & MINERALS LP"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":116.8583409,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-002","owners":["MICHAEL A & WILLIAM O HARRISON"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":15.45613182,"survey_packet":"COMPLETE","title":"SURFACE TITLE WORKING","tract_status":"OPEN"},{"id":"DWM-TX-RV-003","owners":["EVELYN M NAUMANN HAGEL"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":42.51375674,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-004","owners":["DELAWARE BASIN RANCHES INC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":130.0237948,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"DWM-TX-RV-005","owners":["LUCY H SIEVERS TRUST"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":245.7972862,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-006","owners":["MULTIPLE OWNERS"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":17.519957,"survey_packet":"COMPLETE","title":"SURFACE TITLE WORKING","tract_status":"OPEN"},{"id":"DWM-TX-RV-007","owners":["MICHAEL A & WILLIAM O HARRISON"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":88.52231414,"survey_packet":"COMPLETE","title":"SURFACE TITLE WORKING","tract_status":"OPEN"},{"id":"DWM-TX-RV-008","owners":["ANADARKO E&P ONSHORE LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":136.1774466,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"DWM-TX-RV-009","owners":["ANADARKO E&P ONSHORE LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":122.7713052,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"DWM-TX-RV-010","owners":["GORDON K COSTLEY"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":19.6706603,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-011","owners":["ESTATE OF POLLARD KERRY KATHLEEN"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":22.90680082,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-012","owners":["GORDON K COSTLEY"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":22.90673186,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-013","owners":["ROYAL FLUSH OIL LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":22.90664406,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-014","owners":["UNKNOWN"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":47.30137611,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-015","owners":["GALBRAITH FAMILY TRUST"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":44.32318923,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-016","owners":["ANADARKO E&P ONSHORE LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":91.62197167,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"DWM-TX-RV-017","owners":["UNKNOWN"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":0.08141893,"survey_packet":"COMPLETE","title":"SURFACE TITLE WORKING","tract_status":"OPEN"},{"id":"DWM-TX-RV-018","owners":["MALLARD MARGARET REV TRUST"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":192.5714078,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-019","owners":["SIDNEY MALLARD"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":79.26869992,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-020","owners":["ESTATE OF MARY W COOKE"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":182.5635905,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-021","owners":["BTA OIL PRODUCERS LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":79.74725242,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-022","owners":["LINDA GREEN"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":72.95557065,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-023","owners":["ROCA DEVELOPMENT LLC"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":42.91494457,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-024","owners":["CHARLES HUNTER STRAIN FAMILY TRUST","DAVID STRAIN","DEBORAH STRAIN","DUESING CLAIRE STRAIN","MARTHA STRAIN WILKINSON"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":22.99911434,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"DWM-TX-RV-025","owners":["STATE OF TEXAS"],"county":"REEVES","state":"TX","ami":"MAINLINE","rods":8.530488254,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"}],"PECOS RIVER PLANT TO SAND BEND LOOP":[{"id":"RLL-TX-LV-001","owners":["TEXAS PACIFIC RESOURCES LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":170.9282272,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"RLL-TX-LV-002","owners":["DELAWARE BASIN RANCHES INC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":325.2740553,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED-W/CONDITIONS"},{"id":"RLL-TX-LV-003","owners":["TEXAS PACIFIC RESOURCES LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":271.129293,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"},{"id":"RLL-TX-LV-004","owners":["BOARD OF REGENTS OF TEXAS A&M UNI SYS"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":77.44242492,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"RLL-TX-LV-005","owners":["DELAWARE BASIN RANCHES INC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":337.6772372,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED-W/CONDITIONS"},{"id":"RLL-TX-LV-006","owners":["BOARD OF REGENTS OF TEXAS A&M UNI SYS"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":399.4179,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"},{"id":"RLL-TX-LV-007","owners":["TEXAS PACIFIC RESOURCES LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":248.4767,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"OPEN"}],"SB TO WW LOOP LINE":[{"id":"SBWW-TX-LV-001","owners":["TEXAS PACIFIC RESOURCES LLC"],"county":"LOVING","state":"TX","ami":"MAINLINE","rods":141.956841,"survey_packet":"COMPLETE","title":"NO TITLE","tract_status":"SURVEY PERMISSION ACQUIRED"}]};
+
+// ---- Field notes, keyed by TRACT_ID, newest first ----
+const NOTES = {"DWM-TX-RV-001":[{"owner":"MES LAND & MINERALS LP","date":"Sep 11, 2026","time":"3:01 PM","by":"Bertrand","text":"I received survey permission from Jairus O'Malley by email and he has a new number for contact 713-397-0640 MES etal Office number (432) 682-8690."},{"owner":"MES LAND & MINERALS LP","date":"Sep 10, 2026","time":"10:09 AM","by":"Bertrand","text":"I requested survey permission from Jairus and Walt and sent a screenshot of the route. Jairus O'Malley Jairus@srominerals.com, 713-973-9735 Walt Haenggi 432-664-3909 walthaenggi@yahoo.com"}],"DWM-TX-RV-004":[{"owner":"DELAWARE BASIN RANCHES INC","date":"Sep 11, 2026","time":"2:58 PM","by":"Bertrand","text":"Sean Casey received survey permission from Miller Cook. Miller requested that we parallel the property line to the North."}],"BL-TX-LV-002.1":[{"owner":"JONES P&M FAMILY RANCH INC","date":"Sep 10, 2026","time":"4:11 PM","by":"Williams","text":"Spoke with Dominique office manager 432-755-0440 Verbal Survey Permission acquired and she said she would send me an email back as well."},{"owner":"JONES P&M FAMILY RANCH INC","date":"Sep 09, 2026","time":"4:04 PM","by":"Williams","text":"Spoke with Dominique office manager 432-755-0440 and she needs a written email to pandmjonesfamilyranch@gmail.com to authorize survey permission. Sent an email for survey approval."},{"owner":"JONES P&M FAMILY RANCH INC","date":"Sep 09, 2026","time":"3:48 PM","by":"Bertrand","text":"432-755-0440 Skeet Lee Jones (Judge???)"}],"BL-TX-LV-004":[{"owner":"JONES P&M FAMILY RANCH INC","date":"Sep 10, 2026","time":"4:11 PM","by":"Williams","text":"Spoke with Dominique office manager 432-755-0440 Verbal Survey Permission acquired and she said she would send me an email back as well."},{"owner":"JONES P&M FAMILY RANCH INC","date":"Sep 09, 2026","time":"4:10 PM","by":"Williams","text":"Spoke with Dominique office manager 432-755-0440 and she needs a written email to pandmjonesfamilyranch@gmail.com to authorize survey permission. Sent an email for survey approval."}],"RLL-TX-LV-002":[{"owner":null,"date":"Sep 10, 2026","time":"9:56 AM","by":"Cole","text":"Survey permission acquired with conditions give notice Miller.Cook@landbridgeco.com before entering the property"},{"owner":"DELAWARE BASIN RANCHES INC","date":"Sep 09, 2026","time":"3:21 PM","by":"Bertrand","text":"Sean Casey received survey permission from Miller Cook 9-8-2026 Thanks for reaching out. Please feel free to go survey the proposed route. We do have some freshwater wells near the proposed route in Section 30 Blk 55-2 that you guys will need to avoid. Just give us a heads up before ya'll go survey."}],"RLL-TX-LV-005":[{"owner":null,"date":"Sep 10, 2026","time":"9:54 AM","by":"Cole","text":"Survey permission acquired with conditions give notice Miller.Cook@landbridgeco.com before entering the property"},{"owner":"DELAWARE BASIN RANCHES INC","date":"Sep 09, 2026","time":"3:23 PM","by":"Bertrand","text":"Sean Casey acquired survey permission from Miller Cook. Thanks for reaching out. Please feel free to go survey the proposed route. We do have some freshwater wells near the proposed route in Section 30 Blk 55-2 that you guys will need to avoid. Just give us a heads up before ya'll go survey."}],"DWM-TX-LV-002":[{"owner":"LARRY R WOLLSCHLAGER","date":"Sep 09, 2026","time":"4:08 PM","by":"Williams","text":"Spoke with Larry R Wollschlager (432) 661-3561 and was able to obtain verbal survey permission."}],"BL-TX-LV-003.1":[{"owner":"ZPZ DELAWARE I LLC","date":"Sep 09, 2026","time":"4:06 PM","by":"Williams","text":"Called Jake Bebermeyer ZPZ Apache Hord waterline @210-572-8241 not a working number."}],"BL-TX-LV-001":[{"owner":"LARRY R WOLLSCHLAGER","date":"Sep 09, 2026","time":"3:47 PM","by":"Williams","text":"Spoke with Larry R Wollschlager (432) 661-3561 and was able to obtain verbal survey permission."},{"owner":"LARRY R WOLLSCHLAGER","date":"Sep 09, 2026","time":"3:43 PM","by":"Bertrand","text":"Larry@wolfenergy.com 915-487-8015"}],"DWM-TX-RV-008":[{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"9:40 AM","by":"Bertrand","text":"Brett Halfmann has granted survey permission by email."},{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"8:26 AM","by":"Bertrand","text":"I requested aerial plats to send to Brett Halfmann at Oxy for survey permission."}],"DWM-TX-RV-009":[{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"9:38 AM","by":"Bertrand","text":"Brett Halfmann has granted survey permission by email."},{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"8:26 AM","by":"Bertrand","text":"I requested aerial plats to send to Brett Halfmann at Oxy for survey permission."}],"DWM-TX-RV-016":[{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"9:37 AM","by":"Bertrand","text":"Brett Halfmann has granted survey permission by email."},{"owner":"ANADARKO E&P ONSHORE LLC","date":"Sep 09, 2026","time":"8:26 AM","by":"Bertrand","text":"I requested aerial plats to send to Brett Halfmann at Oxy for survey permission."}]};
+
+// ---- Data extracted from RAW DATA-driven summary tabs ----
+const FULL_TABLES = {"barnett":{"surveyPacket":{"prev":[["Mainline",0,0,0,9,null],["Buffer",0,0,0,0,null],["Total",0,0,0,9,null]],"curr":[["Mainline",9,0,9,9,null],["Buffer",2,0,2,2,null],["Total",11,0,11,11,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",9,0,0,0,null],["Buffer",2,0,0,0,null],["Total",11,0,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",9,7,0,2,2,0.2222222222222222],["Buffer",2,1,0,1,1,0.5],["Total",11,8,0,3,3,0.2727272727272727]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",2.746484451121875,1.956865324809375,0,0.7896191263125001,0.7896191263125001,0.28750176466135063]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",9,0,0,0,0,0],["Buffer",2,0,0,0,0,0],["Total",11,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",2.746484451121875,0,0,0,0,0]]}},"dwmenton":{"surveyPacket":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",26.999999999999996,0,26.999999999999996,26.999999999999996,null],["Buffer",3,0,3,3,null],["Total",29.999999999999996,0,29.999999999999996,29.999999999999996,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",26.999999999999996,4,0,0,null],["Buffer",3,0,0,0,null],["Total",29.999999999999996,4,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",26.999999999999996,21.999999999999996,0,5,5,0.1851851851851852],["Buffer",3,3,0,0,0,0],["Total",29.999999999999996,24.999999999999996,0,5,5,0.16666666666666669]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",6.963001562168746,4.97950908945,0,1.98349247271875,1.98349247271875,0.2848617015247311]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",26.999999999999996,0,0,0,0,0],["Buffer",3,0,0,0,0,0],["Total",29.999999999999996,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",6.963001562168746,0,0,0,0,0]]}},"prsb":{"surveyPacket":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",7,0,7,7,null],["Buffer",0,0,0,0,null],["Total",7,0,7,7,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",7,0,0,0,null],["Buffer",0,0,0,0,null],["Total",7,0,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",7,3,0,4,4,0.5714285714285714],["Buffer",0,0,0,0,0,0],["Total",7,3,0,4,4,0.5714285714285714]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",5.7198307425624995,2.266678202875,0,3.4531525396875,3.4531525396875,0.6037158606795554]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",7,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",7,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",5.7198307425624995,0,0,0,0,0]]}},"sbww":{"surveyPacket":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",1,0,1,1,null],["Buffer",0,0,0,0,null],["Total",1,0,1,1,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",1,0,0,0,null],["Buffer",0,0,0,0,null],["Total",1,0,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",1,0,0,1,1,1],["Buffer",0,0,0,0,0,0],["Total",1,0,0,1,1,1]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",0.443615128125,0,0,0.443615128125,0.443615128125,1]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",1,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",1,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",0.443615128125,0,0,0,0,0]]}}};
+
+const projects = [
+  { key: "barnett",  name: "Barnett Loop",                    prospect: "BARNETT LOOP" },
+  { key: "dwmenton", name: "Dorothy White to Mentone CS",      prospect: "DOROTHY WHITE TO MENTONE CS" },
+  { key: "prsb",     name: "Pecos River Plant to Sand Bend Loop", prospect: "PECOS RIVER PLANT TO SAND BEND LOOP" },
+  { key: "sbww",     name: "SB to WW Loop Line",               prospect: "SB TO WW LOOP LINE" }
+];
+
+const TABLE_DEFS = {
+  surveyPacket:      { heading:'Survey Packet Status', mid:['Working','Complete'], pctLabel:'% Complete', doneIdx:1 },
+  title:             { heading:'Title Status', mid:['Working','Complete'], pctLabel:'% Complete', doneIdx:1 },
+  permission:        { heading:'Survey Permission Status', mid:['Working','Refusal','Acquired'], pctLabel:'% Acquired', doneIdx:2 },
+  row:                { heading:'ROW Acquisition Status', mid:['Negotiating','Refusal','Executed'], pctLabel:'% Executed', doneIdx:2 },
+  permissionMileage: { heading:'Mileage', mid:['Mileage Working','Refusal','Mileage Acquired'], pctLabel:'% Acquired', isMileage:true, totalLabel:'Total Mileage' },
+  rowMileage:        { heading:'Mileage', mid:['Mileage Negotiating','Refusal','Mileage Executed'], pctLabel:'% Executed', isMileage:true, totalLabel:'Total Mileage' }
+};
+
+function pct(n,d){ return d>0 ? (n/d*100) : 0; }
+function fmtVal(v, isMileage){
+  if (v === null || v === undefined) return '—';
+  if (isMileage) return v.toFixed(2);
+  const r = Math.round(v*100)/100;
+  return (Math.round(r) === r) ? Math.round(r).toString() : r.toString();
+}
+
+function parseRow(row, midCount){
+  const [label, total, ...rest] = row;
+  const mids = rest.slice(0, midCount);
+  const change = rest[midCount];
+  const pctVal = rest[midCount+1];
+  return { label, total, mids, change, pctVal };
+}
+
+function weekBlock(rowsArr, weekLabel, def){
+  let out = `<div class="week-block"><div class="week-label">${weekLabel}</div>
+    <table class="sheet-table"><thead><tr><th>Tract Line</th><th class="num">${def.totalLabel || 'Total Tracts'}</th>`;
+  def.mid.forEach(m => out += `<th class="num">${m}</th>`);
+  out += `<th class="num">Change</th><th class="num">${def.pctLabel}</th></tr></thead><tbody>`;
+  rowsArr.forEach(row => {
+    const r = parseRow(row, def.mid.length);
+    const changeCls = r.change > 0 ? 'pos' : (r.change < 0 ? 'neg' : '');
+    const changeStr = r.change === null ? '—' : (r.change > 0 ? '+' : '') + fmtVal(r.change, def.isMileage);
+    out += `<tr><td class="rowlabel">${r.label}</td><td class="num">${fmtVal(r.total, def.isMileage)}</td>`;
+    r.mids.forEach(v => out += `<td class="num">${fmtVal(v, def.isMileage)}</td>`);
+    out += `<td class="num ${changeCls}">${changeStr}</td>`;
+    out += `<td class="num">${r.pctVal === null || r.pctVal === undefined ? '—' : (r.pctVal*100).toFixed(0)+'%'}</td></tr>`;
+  });
+  out += `</tbody></table></div>`;
+  return out;
+}
+
+function sheetCard(projKey, tableKey, subtitle){
+  const def = TABLE_DEFS[tableKey];
+  const data = FULL_TABLES[projKey][tableKey];
+  return `<div class="week-pair">
+    ${weekBlock(data.prev, 'Previous Week', def)}
+    ${weekBlock(data.curr, 'Current Week', def)}
+  </div>`;
+}
+
+function heroStage(label, done, total){
+  const p = pct(done, total);
+  return `<div class="stage">
+    <div class="label">${label}</div>
+    <div class="pct">${p.toFixed(0)}<span>%</span></div>
+    <div class="track"><i style="width:${p}%"></i></div>
+  </div>`;
+}
+
+const STATUS_BADGE = {
+  'OPEN': 'badge-open',
+  'SURVEY PERMISSION ACQUIRED': 'badge-acquired',
+  'SURVEY PERMISSION ACQUIRED-W/CONDITIONS': 'badge-acquired',
+  'SURVEY PERMISSION WORKING': 'badge-working',
+  'SURFACE TITLE WORKING': 'badge-working',
+  'REFUSAL': 'badge-refusal',
+  'COMPLETE': 'badge-complete',
+  'NO TITLE': 'badge-open'
+};
+function badge(val){
+  const cls = STATUS_BADGE[val] || 'badge-open';
+  return `<span class="badge ${cls}">${val || '—'}</span>`;
+}
+
+function tractTable(p){
+  const rows = TRACTS[p.prospect] || [];
+  const trs = rows.map(t => `
+    <tr data-search="${(t.id+' '+t.owners.join(' ')+' '+t.county).toLowerCase()}"
+        data-sort-id="${t.id.toLowerCase()}"
+        data-sort-owner="${t.owners[0].toLowerCase()}"
+        data-sort-county="${(t.county+', '+t.state).toLowerCase()}"
+        data-sort-segment="${t.ami.toLowerCase()}"
+        data-sort-length="${t.rods || 0}"
+        data-sort-survey="${(t.survey_packet||'').toLowerCase()}"
+        data-sort-title="${(t.title||'').toLowerCase()}"
+        data-sort-status="${(t.tract_status||'').toLowerCase()}">
+      <td class="mono">${t.id}</td>
+      <td><button class="landowner-link" data-prospect="${p.prospect}" data-tract-id="${t.id}">${t.owners[0]}</button>${t.owners.length>1 ? ` <span class="more">+${t.owners.length-1} more</span>` : ''}</td>
+      <td>${t.county}, ${t.state}</td>
+      <td class="mono">${t.ami === 'MAINLINE' ? 'ML' : 'BUF'}</td>
+      <td class="num mono">${t.rods > 0 ? (t.rods/320).toFixed(2)+' mi' : '—'}</td>
+      <td>${badge(t.survey_packet)}</td>
+      <td>${badge(t.title)}</td>
+      <td>${badge(t.tract_status)}</td>
+    </tr>`).join('');
+
+  const cols = [
+    { key: 'id', label: 'Tract ID' },
+    { key: 'owner', label: 'Landowner' },
+    { key: 'county', label: 'County' },
+    { key: 'segment', label: 'Segment' },
+    { key: 'length', label: 'Length', num: true },
+    { key: 'survey', label: 'Survey Packet' },
+    { key: 'title', label: 'Title' },
+    { key: 'status', label: 'Tract Status' }
+  ];
+  const headCells = cols.map(c => `<th class="sortable${c.num?' num':''}" data-sort-key="${c.key}" onclick="sortDetail('${p.key}','${c.key}',${!!c.num})">${c.label}<span class="sort-arrow" data-arrow-key="${c.key}"></span></th>`).join('');
+
+  return `<div class="card wide">
+    <div class="card-head">
+      <div>
+        <h2>Tract-Level Detail</h2>
+        <div class="sub">${rows.length} tracts · ${p.name}</div>
+      </div>
+      <input type="text" class="search" placeholder="Search tract, owner, county…" oninput="filterTracts(this, '${p.key}')">
+    </div>
+    <div class="table-scroll">
+    <table class="rows detail" id="detail-${p.key}">
+      <thead><tr>${headCells}</tr></thead>
+      <tbody>${trs}</tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function filterTracts(input, key){
+  const q = input.value.toLowerCase();
+  document.querySelectorAll('#detail-'+key+' tbody tr').forEach(tr => {
+    tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+const DETAIL_SORT_STATE = {};
+
+function sortDetail(key, field, isNumeric){
+  const table = document.getElementById('detail-'+key);
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  const state = DETAIL_SORT_STATE[key] || {};
+  const dir = (state.field === field && state.dir === 'asc') ? 'desc' : 'asc';
+  DETAIL_SORT_STATE[key] = { field, dir };
+
+  rows.sort((a, b) => {
+    let av = a.dataset['sort' + field.charAt(0).toUpperCase() + field.slice(1)];
+    let bv = b.dataset['sort' + field.charAt(0).toUpperCase() + field.slice(1)];
+    if (isNumeric) { av = parseFloat(av) || 0; bv = parseFloat(bv) || 0; }
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  rows.forEach(tr => tbody.appendChild(tr));
+
+  table.querySelectorAll('.sort-arrow').forEach(el => {
+    el.textContent = el.dataset.arrowKey === field ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+  });
+}
+
+function notesSection(tractId, owners){
+  const all = NOTES[tractId] || [];
+  const ownerSet = new Set((owners || []).map(o => o.toUpperCase()));
+  const entries = all.filter(n => !n.owner || ownerSet.has(n.owner));
+  if (!entries.length) {
+    return `<div class="tract-notes"><div class="tract-notes-heading">Field Notes</div>
+      <div class="tract-notes-empty">No notes logged for this tract.</div></div>`;
+  }
+  const n = entries[0];
+  return `<div class="tract-notes">
+    <div class="tract-notes-heading">Field Notes</div>
+    <div class="note-entry">
+      <div class="note-meta"><span class="note-date">${n.date} · ${n.time}</span><span class="note-by">${n.by}</span></div>
+      ${n.owner ? `<div class="note-owner">${n.owner}</div>` : ''}
+      <div class="note-text">${n.text}</div>
+    </div>
+  </div>`;
+}
+
+function showTractNote(prospect, tractId){
+  const t = (TRACTS[prospect] || []).find(x => x.id === tractId);
+  if (!t) return;
+  const lengthStr = t.rods > 0 ? (t.rods/320).toFixed(2)+' mi' : '—';
+  const ownersHtml = t.owners.map(o => `<div class="owner">${o}</div>`).join('');
+
+  document.getElementById('tractPopup').innerHTML = `
+    <div class="tract-popup-head">
+      <div>
+        <h3>${t.owners[0]}</h3>
+        <div class="mono" style="color:var(--ink-faint)">${t.id}</div>
+      </div>
+      <button class="tract-popup-close" onclick="closeTractNote()">✕</button>
+    </div>
+    <div class="tract-popup-owners">
+      <div class="label">${t.owners.length > 1 ? t.owners.length + ' owners of record' : 'Owner of record'}</div>
+      ${ownersHtml}
+    </div>
+    <div class="tract-popup-grid">
+      <div class="item"><div class="label">County</div><div class="val">${t.county}, ${t.state}</div></div>
+      <div class="item"><div class="label">Segment</div><div class="val">${t.ami === 'MAINLINE' ? 'Mainline' : 'Buffer'}</div></div>
+      <div class="item"><div class="label">Length</div><div class="val">${lengthStr}</div></div>
+    </div>
+    <div class="tract-popup-badges">
+      <div class="row"><span class="label">Survey Packet</span>${badge(t.survey_packet)}</div>
+      <div class="row"><span class="label">Title</span>${badge(t.title)}</div>
+      <div class="row"><span class="label">Tract Status</span>${badge(t.tract_status)}</div>
+    </div>
+    ${notesSection(tractId, t.owners)}`;
+  document.getElementById('tractPopupOverlay').classList.add('active');
+}
+
+function closeTractNote(){
+  document.getElementById('tractPopupOverlay').classList.remove('active');
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.landowner-link');
+  if (btn) showTractNote(btn.dataset.prospect, btn.dataset.tractId);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeTractNote();
+});
+
+function statusBreakdown(p){
+  const rows = TRACTS[p.prospect] || [];
+  const buckets = { Acquired: 0, Working: 0, Open: 0, Refusal: 0 };
+  rows.forEach(r => {
+    const s = r.tract_status || '';
+    if (s.indexOf('ACQUIRED') > -1) buckets.Acquired++;
+    else if (s === 'REFUSAL') buckets.Refusal++;
+    else if (s.indexOf('WORKING') > -1) buckets.Working++;
+    else buckets.Open++;
+  });
+  return buckets;
+}
+
+function stageProgress(p){
+  const t = FULL_TABLES[p.key];
+  const sp = parseRow(t.surveyPacket.curr[2], 2);
+  const ti = parseRow(t.title.curr[2], 2);
+  const pe = parseRow(t.permission.curr[2], 3);
+  const ro = parseRow(t.row.curr[2], 3);
+  return {
+    titleSummary: [
+      { label: 'Survey Packet', v: pct(sp.mids[1], sp.total) },
+      { label: 'Title', v: pct(ti.mids[1], ti.total) }
+    ],
+    acquisitionSummary: [
+      { label: 'Survey Permission', v: pct(pe.mids[2], pe.total) },
+      { label: 'ROW Acquisition', v: pct(ro.mids[2], ro.total) }
+    ]
+  };
+}
+
+function barRows(stages){
+  return stages.map(s => `<div class="bar-row">
+    <div class="bar-row-label">${s.label}</div>
+    <div class="bar-row-track"><div class="bar-row-fill" style="width:${s.v}%"></div></div>
+    <div class="bar-row-val">${s.v.toFixed(0)}%</div>
+  </div>`).join('');
+}
+
+function snapshotCard(p){
+  const buckets = statusBreakdown(p);
+  const total = Object.values(buckets).reduce((a,c) => a+c, 0) || 1;
+  const segments = [
+    { label: 'Acquired', val: buckets.Acquired, color: 'var(--green)' },
+    { label: 'Working', val: buckets.Working, color: 'var(--blue)' },
+    { label: 'Open', val: buckets.Open, color: 'var(--grey-bar)' },
+    { label: 'Refusal', val: buckets.Refusal, color: 'var(--refusal)' }
+  ].filter(s => s.val > 0);
+
+  let cum = 0;
+  const stops = segments.map(s => {
+    const p1 = cum, p2 = cum + (s.val/total*100);
+    cum = p2;
+    return `${s.color} ${p1}% ${p2}%`;
+  }).join(', ');
+
+  const legend = segments.map(s => `<div class="donut-legend-item">
+    <i style="background:${s.color}"></i><span>${s.label}</span>
+    <span class="donut-legend-val">${s.val} · ${(s.val/total*100).toFixed(0)}%</span>
+  </div>`).join('');
+
+  const stages = stageProgress(p);
+
+  return `<div class="card">
+    <h2>Project Snapshot</h2>
+    <div class="sub">${p.name}</div>
+    <div class="snapshot-grid">
+      <div class="donut-block">
+        <div class="donut-outer">
+          <div class="donut" style="background: conic-gradient(${stops});"></div>
+          <div class="donut-hole"><div class="donut-total">${total}</div><div class="donut-total-label">tracts</div></div>
+        </div>
+        <div class="donut-legend">${legend}</div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-group">
+          <div class="bar-group-title">Title Summary</div>
+          ${barRows(stages.titleSummary)}
+        </div>
+        <div class="bar-group">
+          <div class="bar-group-title">Acquisition Summary</div>
+          ${barRows(stages.acquisitionSummary)}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderProject(p){
+  const t = FULL_TABLES[p.key];
+  const spCurrTotal = parseRow(t.surveyPacket.curr[2], 2);
+  const tCurrTotal   = parseRow(t.title.curr[2], 2);
+  const permCurrTotal = parseRow(t.permission.curr[2], 3);
+  const rowCurrTotal  = parseRow(t.row.curr[2], 3);
+
+  const hero = `<div class="hero">
+    ${heroStage('Survey Packet Complete', spCurrTotal.mids[1], spCurrTotal.total)}
+    ${heroStage('Title Complete', tCurrTotal.mids[1], tCurrTotal.total)}
+    ${heroStage('Survey Permission Acquired', permCurrTotal.mids[2], permCurrTotal.total)}
+    ${heroStage('ROW Executed', rowCurrTotal.mids[2], rowCurrTotal.total)}
+  </div>`;
+
+  const surveyPacketCard = `<div class="card wide status-card">
+    <h2>Survey Packet Status</h2>
+    <div class="sub">${p.name} · ${fmtVal(spCurrTotal.total)} tracts</div>
+    ${sheetCard(p.key, 'surveyPacket')}
+  </div>`;
+
+  const titleCard = `<div class="card wide status-card">
+    <h2>Title Status</h2>
+    <div class="sub">${p.name} · ${fmtVal(tCurrTotal.total)} tracts</div>
+    ${sheetCard(p.key, 'title')}
+  </div>`;
+
+  const permissionCard = `<div class="card wide status-card">
+    <h2>Survey Permission Status</h2>
+    <div class="sub">${p.name} · ${fmtVal(permCurrTotal.total)} tracts</div>
+    ${sheetCard(p.key, 'permission')}
+    <div class="mileage-heading">Mileage</div>
+    ${sheetCard(p.key, 'permissionMileage')}
+  </div>`;
+
+  const rowCard = `<div class="card wide status-card">
+    <h2>ROW Acquisition Status</h2>
+    <div class="sub">${p.name} · ${fmtVal(rowCurrTotal.total)} tracts · status source pending in RAW DATA</div>
+    ${sheetCard(p.key, 'row')}
+    <div class="mileage-heading">Mileage</div>
+    ${sheetCard(p.key, 'rowMileage')}
+  </div>`;
+
+  return `${hero}
+    ${snapshotCard(p)}
+    <div class="grid">${surveyPacketCard}${titleCard}${permissionCard}${rowCard}</div>
+    ${tractTable(p)}`;
+}
+
+function overallPct(p){
+  const t = FULL_TABLES[p.key];
+  const sp = parseRow(t.surveyPacket.curr[2], 2);
+  const ti = parseRow(t.title.curr[2], 2);
+  const pe = parseRow(t.permission.curr[2], 3);
+  const ro = parseRow(t.row.curr[2], 3);
+  const vals = [pct(sp.mids[1],sp.total), pct(ti.mids[1],ti.total), pct(pe.mids[2],pe.total), pct(ro.mids[2],ro.total)];
+  return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(0);
+}
+
+function tractCount(p){
+  return parseRow(FULL_TABLES[p.key].surveyPacket.curr[2], 2).total;
+}
+
+function projectCounties(p){
+  const rows = TRACTS[p.prospect] || [];
+  return [...new Set(rows.map(r => r.county))];
+}
+
+function overviewCard(p){
+  const t = FULL_TABLES[p.key];
+  const sp = parseRow(t.surveyPacket.curr[2], 2);
+  const ti = parseRow(t.title.curr[2], 2);
+  const pe = parseRow(t.permission.curr[2], 3);
+  const ro = parseRow(t.row.curr[2], 3);
+  const mi = parseRow(t.permissionMileage.curr[0], 3);
+  const counties = projectCounties(p);
+  const rows = TRACTS[p.prospect] || [];
+  const searchBlob = [p.name, ...counties, ...rows.map(r => r.id + ' ' + r.owners.join(' '))].join(' ').toLowerCase();
+
+  const stages = [
+    { label: 'Survey Packet', v: pct(sp.mids[1], sp.total) },
+    { label: 'Title', v: pct(ti.mids[1], ti.total) },
+    { label: 'Survey Permission', v: pct(pe.mids[2], pe.total) },
+    { label: 'ROW Acquisition', v: pct(ro.mids[2], ro.total) }
+  ];
+
+  return `<div class="ov-card" data-key="${p.key}" data-search="${searchBlob}">
+    <div class="ov-head">
+      <h3>${p.name}</h3>
+      <span class="ov-tracts">${fmtVal(sp.total)} tracts · ${counties.join(' & ')} County, TX</span>
+    </div>
+    <div class="ov-stages">
+      ${stages.map(s => `<div class="ov-stage">
+        <div class="ov-stage-label">${s.label}</div>
+        <div class="track"><i style="width:${s.v}%"></i></div>
+        <div class="ov-stage-pct">${s.v.toFixed(0)}%</div>
+      </div>`).join('')}
+    </div>
+    <div class="ov-foot">
+      <span class="ov-mileage">${mi.total.toFixed(2)} mi total · ${mi.mids[2].toFixed(2)} mi acquired</span>
+      <button class="ov-btn" onclick="selectTab('${p.key}')">Open dashboard →</button>
+    </div>
+  </div>`;
+}
+
+function buildOverview(){
+  const grid = document.getElementById('overviewGrid');
+  grid.innerHTML = projects.map(overviewCard).join('');
+}
+
+function filterOverview(){
+  const q = document.getElementById('overviewSearch').value.toLowerCase();
+  document.querySelectorAll('.ov-card').forEach(card => {
+    const matchesSearch = !q || card.dataset.search.includes(q);
+    card.classList.toggle('hidden', !matchesSearch);
+  });
+}
+
+const tabsEl = document.getElementById('tabs');
+const projectsEl = document.getElementById('projects');
+document.getElementById('reportDate').textContent = REPORT_DATE;
+
+const overviewBtn = document.createElement('button');
+overviewBtn.className = 'active';
+overviewBtn.dataset.key = 'overview';
+overviewBtn.innerHTML = `Overview`;
+overviewBtn.addEventListener('click', () => selectTab('overview'));
+tabsEl.appendChild(overviewBtn);
+
+projects.forEach((p, i) => {
+  const btn = document.createElement('button');
+  btn.dataset.key = p.key;
+  btn.innerHTML = `${p.name}<span class="n">${fmtVal(tractCount(p))} tracts · ${overallPct(p)}% avg progress</span>`;
+  btn.addEventListener('click', () => selectTab(p.key));
+  tabsEl.appendChild(btn);
+
+  const div = document.createElement('div');
+  div.className = 'project';
+  div.id = 'proj-' + p.key;
+  div.innerHTML = renderProject(p);
+  projectsEl.appendChild(div);
+});
+
+buildOverview();
+
+function selectTab(key){
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+  document.querySelectorAll('.project').forEach(d => d.classList.toggle('active', d.id === 'proj-' + key));
+}
+</script>
+</body>
+</html>
