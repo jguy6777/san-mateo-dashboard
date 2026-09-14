@@ -778,9 +778,13 @@ function notesSection(tractId, owners){
   </div>`;
 }
 
+let openTractProjectKey = null;
+
 function showTractNote(prospect, tractId){
   const t = (TRACTS[prospect] || []).find(x => x.id === tractId);
   if (!t) return;
+  const p = findProjectByProspect(prospect);
+  openTractProjectKey = p ? p.key : null;
   const lengthStr = t.rods > 0 ? (t.rods/320).toFixed(2)+' mi' : '—';
   const ownersHtml = t.owners.map(o => `<div class="owner">${o}</div>`).join('');
 
@@ -813,6 +817,10 @@ function showTractNote(prospect, tractId){
 
 function closeTractNote(){
   document.getElementById('tractPopupOverlay').classList.remove('active');
+  if (openTractProjectKey) {
+    zoomToProjectExtent(openTractProjectKey);
+    openTractProjectKey = null;
+  }
 }
 
 document.addEventListener('click', e => {
@@ -1044,11 +1052,7 @@ function toggleRouteLayer(key, idx){
   }
 }
 
-function toggleStatusFilter(key, statusKey){
-  const normalized = statusKey || null;
-  STATUS_FILTER[key] = (STATUS_FILTER[key] === normalized) ? null : normalized;
-  applyStatusFilter(key);
-
+function zoomToProjectExtent(key){
   const rec = MAPS[key];
   if (!rec) return;
   const active = STATUS_FILTER[key];
@@ -1065,6 +1069,13 @@ function toggleStatusFilter(key, statusKey){
       }
     }
   }
+}
+
+function toggleStatusFilter(key, statusKey){
+  const normalized = statusKey || null;
+  STATUS_FILTER[key] = (STATUS_FILTER[key] === normalized) ? null : normalized;
+  applyStatusFilter(key);
+  zoomToProjectExtent(key);
 }
 
 function scrollToMapIfNeeded(key){
@@ -1097,7 +1108,8 @@ function highlightParcel(prospect, tractId){
 }
 
 function viewOnMap(prospect, tractId){
-  closeTractNote();
+  openTractProjectKey = null;
+  document.getElementById('tractPopupOverlay').classList.remove('active');
   const p = findProjectByProspect(prospect);
   if (!p) return;
   const el = document.getElementById('map-' + p.key);
