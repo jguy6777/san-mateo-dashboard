@@ -475,6 +475,7 @@
   }
   @media (max-width: 900px){
     .project-layout{ grid-template-columns: 1fr; }
+    .project-map-col{ display: none; }
   }
 
   .parcel-map-card{
@@ -489,10 +490,6 @@
     border: 1px solid var(--line);
     margin-top: 14px;
     background: var(--panel-2);
-  }
-  @media (max-width: 900px){
-    .parcel-map-card{ position: static; }
-    .parcel-map{ height: 380px; }
   }
   .map-legend{
     display:flex; flex-wrap:wrap; gap: 8px;
