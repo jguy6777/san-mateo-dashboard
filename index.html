@@ -358,6 +358,18 @@
   .ov-stage{ display:grid; grid-template-columns: 132px 1fr 36px; align-items:center; gap: 10px; }
   .ov-stage-label{ font-size: 12px; color: var(--ink-dim); }
   .ov-stage-pct{ font-family: var(--font-mono); font-size: 12px; text-align:right; color: var(--ink); }
+  .ov-notes{
+    padding-top: 14px; border-top: 1px solid var(--line-soft);
+  }
+  .ov-notes-heading{
+    font-family: var(--font-mono); font-size: 11px; letter-spacing:0.02em;
+    color: var(--green); margin-bottom: 10px;
+  }
+  .ov-notes-group + .ov-notes-group{ margin-top: 12px; }
+  .ov-notes-label{ font-size: 11.5px; font-weight:600; color: var(--ink-dim); margin-bottom: 6px; }
+  .ov-notes-list{ margin: 0; padding-left: 18px; }
+  .ov-notes-list li{ font-size: 12.5px; color: var(--ink); line-height: 1.5; margin-bottom: 4px; }
+  .ov-notes-list li:last-child{ margin-bottom: 0; }
   .ov-foot{
     display:flex; justify-content:space-between; align-items:center;
     padding-top: 14px; border-top: 1px solid var(--line-soft);
@@ -584,6 +596,9 @@ const PARCELS = {"SBWW-TX-LV-001":[[31.796156,-103.788291],[31.810555,-103.78822
 // ---- Pipeline route centerline segments, keyed by PROSPECT (from Survey Permission KMZ exports) ----
 const ROUTES = {"WOLF GAS GATHERING TO PECOS RIVER SYSTEM":[{"name":"Barnett Loop","color":"#c500ff","segments":[[[31.739982,-103.596832],[31.73986,-103.596667]],[[31.738488,-103.598776],[31.74018,-103.5971],[31.739982,-103.596832]],[[31.735663,-103.601574],[31.738488,-103.598776]],[[31.732832,-103.604377],[31.735663,-103.601574]],[[31.730162,-103.607021],[31.732832,-103.604377]],[[31.729557,-103.60762],[31.729851,-103.607329]],[[31.715614,-103.604143],[31.729274,-103.6079],[31.729557,-103.60762]],[[31.729851,-103.607329],[31.730162,-103.607021]],[[31.707744,-103.61185],[31.707449,-103.611644],[31.71482,-103.603925],[31.715614,-103.604143]]]},{"name":"Dorothy White to Mentone CS","color":"#0070ff","segments":[[[31.705756,-103.61956],[31.707259,-103.614975],[31.707875,-103.612195],[31.707752,-103.611828]],[[31.703919,-103.625164],[31.705756,-103.61956]],[[31.701735,-103.633555],[31.701941,-103.631291]],[[31.703781,-103.625587],[31.703919,-103.625164]],[[31.701385,-103.637404],[31.701735,-103.633555]],[[31.701941,-103.631291],[31.701952,-103.631165],[31.703781,-103.625587]],[[31.701003,-103.641611],[31.701385,-103.637404]],[[31.700257,-103.655447],[31.700166,-103.651244]],[[31.700166,-103.651244],[31.700159,-103.650891],[31.701003,-103.641611]],[[31.700477,-103.665665],[31.700477,-103.66566]],[[31.700581,-103.670524],[31.700477,-103.665665]],[[31.700477,-103.66566],[31.700257,-103.655447]],[[31.700632,-103.672874],[31.700581,-103.670524]],[[31.700926,-103.686582],[31.700786,-103.680071]],[[31.700738,-103.677813],[31.700712,-103.676598]],[[31.701082,-103.693804],[31.700926,-103.686582]],[[31.700712,-103.676598],[31.700686,-103.675383]],[[31.700686,-103.675383],[31.700632,-103.672874]],[[31.700786,-103.680071],[31.700764,-103.679028]],[[31.700764,-103.679028],[31.700738,-103.677813]],[[31.70009,-103.69834],[31.701089,-103.694152],[31.701082,-103.693804]],[[31.697733,-103.708226],[31.697947,-103.707331]],[[31.697947,-103.707331],[31.70009,-103.69834]],[[31.694779,-103.720612],[31.695298,-103.71844]],[[31.695298,-103.71844],[31.696882,-103.711796]],[[31.694591,-103.721402],[31.694779,-103.720612]],[[31.693167,-103.727373],[31.694591,-103.721402]]]},{"name":"Billy Burt to Mentone CS","color":"#ffaa00","segments":[[[31.745744,-103.659913],[31.74595,-103.660181]]]}],"PECOS RIVER PLANT TO SAND BEND LOOP":[{"name":"Pipeline Route","color":"#e0483c","segments":[[[31.825298,-103.805164],[31.835912,-103.804877],[31.837173,-103.806178]],[[31.837173,-103.806178],[31.839809,-103.808898]],[[31.810549,-103.805563],[31.825298,-103.805164]],[[31.80299,-103.805989],[31.803366,-103.805986],[31.80337,-103.805757],[31.810549,-103.805563]],[[31.868681,-103.814938],[31.869167,-103.815394],[31.879587,-103.812831]],[[31.854292,-103.811104],[31.859796,-103.806582],[31.868681,-103.814938]],[[31.839809,-103.808898],[31.842025,-103.811186],[31.853873,-103.811448],[31.854292,-103.811104]]]}],"SB TO WW LOOP LINE":[{"name":"Pipeline Route","color":"#e0483c","segments":[[[31.798505,-103.804922],[31.798506,-103.804811],[31.802733,-103.804807],[31.802738,-103.805623],[31.803635,-103.80561],[31.803628,-103.806172],[31.80367,-103.806173]]]}]};
 
+// ---- Weekly notes from each summary sheet's Comments section ----
+const WEEKLY_NOTES = {"wolfgas":{"reportingPeriod":"09/14/2026","highlightsHeading":"Survey Highlights","highlights":["Have made initial attempts to contact all owners on the route, and have received general positive feedback from owners.","Delaware Basin Ranches, LLC, (DWM-TX-RV-004) has made minor requests for route adjustments to parallel property line.","Have made initial attempts to contact all owners on the route, and have received general positive feedback from owners."],"actionItems":[]},"prsb":{"reportingPeriod":"09/14/2026","highlightsHeading":"Survey Highlights","highlights":["Texas Pacific Resources has made minor requests for route adjustments.","Texas A&M form circualting for review.  Have received positive feedback on routing.","Delaware Basin Ranches, LLC, has advised of several water well locations that will need to be identified in the field to verify the proposed routing does not impanct."],"actionItems":[]},"sbww":{"reportingPeriod":"09/14/2026","highlightsHeading":"Survey Highlights","highlights":["Texas Pacific Resources has made minor requests for route adjustments."],"actionItems":[]}};
+
 // ---- Data extracted from RAW DATA-driven summary tabs ----
 const FULL_TABLES = {"wolfgas":{"surveyPacket":{"prev":[["Barnett Loop - Mainline",0,0,0,0,0],["Dorothy White to Mentone CS - Mainline",0,0,0,0,0],["Billy Burt to Mentone CS - Mainline",0,0,0,0,0],["Barnett Loop - Buffer",0,0,0,0,0],["Dorothy White to Mentone CS - Buffer",0,0,0,0,0],["Total",0,0,0,0,0]],"curr":[["Barnett Loop - Mainline",9,0,9,9,null],["Dorothy White to Mentone CS - Mainline",27,0,27,27,null],["Billy Burt to Mentone CS - Mainline",1,0,1,1,null],["Barnett Loop - Buffer",2,0,2,2,null],["Dorothy White to Mentone CS - Buffer",3,0,3,3,null],["Total",42,0,42,42,null]]},"title":{"prev":[["Barnett Loop - Mainline",0,0,0,0,0],["Dorothy White to Mentone CS - Mainline",0,0,0,0,0],["Billy Burt to Mentone CS - Mainline",0,0,0,0,0],["Barnett Loop - Buffer",0,0,0,0,0],["Dorothy White to Mentone CS - Buffer",0,0,0,0,0],["Total",0,0,0,0,0]],"curr":[["Barnett Loop - Mainline",9,0,0,0,null],["Dorothy White to Mentone CS - Mainline",27,4,0,0,null],["Billy Burt to Mentone CS - Mainline",1,0,0,0,null],["Barnett Loop - Buffer",2,0,0,0,null],["Dorothy White to Mentone CS - Buffer",3,0,0,0,null],["Total",42,4,0,0,null]]},"permission":{"prev":[["Barnett Loop - Mainline",0,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline",0,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline",0,0,0,0,0,0],["Barnett Loop - Buffer",0,0,0,0,0,0],["Dorothy White to Mentone CS - Buffer",0,0,0,0,0,0],["Total",0,0,0,0,0,0]],"curr":[["Barnett Loop - Mainline",9,7,0,2,2,0.222222222222222],["Dorothy White to Mentone CS - Mainline",27,21,0,6,6,0.222222222222222],["Billy Burt to Mentone CS - Mainline",1,1,0,0,0,0],["Barnett Loop - Buffer",2,1,0,1,1,0.5],["Dorothy White to Mentone CS - Buffer",3,3,0,0,0,0],["Total",42,33,0,9,9,0.214285714285714]]},"permissionMileage":{"prev":[["Barnett Loop - Mainline Mileage",0,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline Mileage",0,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline Mileage",0,0,0,0,0,0],["Total",0,0,0,0,0,0]],"curr":[["Barnett Loop - Mainline Mileage",2.74648445112188,1.95686532480938,0,0.7896191263125,0.7896191263125,0.287501764661351],["Dorothy White to Mentone CS - Mainline Mileage",6.96300156216875,4.6143267741375,0,2.34867478803125,2.34867478803125,0.337307807137661],["Billy Burt to Mentone CS - Mainline Mileage",0.021246603125,0.021246603125,0,0,0,0],["Total",9.73073261641563,6.59243870207188,0,3.13829391434375,3.13829391434375,0.322513631609761]]},"row":{"prev":[["Barnett Loop - Mainline",0,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline",0,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline",0,0,0,0,0,0],["Barnett Loop - Buffer",0,0,0,0,0,0],["Dorothy White to Mentone CS - Buffer",0,0,0,0,0,0],["Total",0,0,0,0,0,0]],"curr":[["Barnett Loop - Mainline",9,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline",27,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline",1,0,0,0,0,0],["Barnett Loop - Buffer",2,0,0,0,0,0],["Dorothy White to Mentone CS - Buffer",3,0,0,0,0,0],["Total",42,0,0,0,0,0]]},"rowMileage":{"prev":[["Barnett Loop - Mainline Mileage",0,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline Mileage",0,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline Mileage",0,0,0,0,0,0],["Total",0,0,0,0,0,0]],"curr":[["Barnett Loop - Mainline Mileage",2.74648445112188,0,0,0,0,0],["Dorothy White to Mentone CS - Mainline Mileage",6.96300156216875,0,0,0,0,0],["Billy Burt to Mentone CS - Mainline Mileage",0.021246603125,0,0,0,0,0],["Total",9.73073261641563,0,0,0,0,0]]}},"prsb":{"surveyPacket":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",7,0,7,7,null],["Buffer",0,0,0,0,null],["Total",7,0,7,7,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",7,0,0,0,null],["Buffer",0,0,0,0,null],["Total",7,0,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",7,2,0,5,5,0.7142857142857143],["Buffer",0,0,0,0,0,0],["Total",7,2,0,5,5,0.7142857142857143]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",5.7198307425625,1.490188515375,0,4.2296422271875,4.2296422271875,0.739469823069032]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",7,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",7,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",5.7198307425624995,0,0,0,0,0]]}},"sbww":{"surveyPacket":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",1,0,1,1,null],["Buffer",0,0,0,0,null],["Total",1,0,1,1,null]]},"title":{"prev":[["Mainline",0,0,0,0,null],["Buffer",0,0,0,0,null],["Total",0,0,0,0,null]],"curr":[["Mainline",1,0,0,0,null],["Buffer",0,0,0,0,null],["Total",1,0,0,0,null]]},"permission":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",1,0,0,1,1,1],["Buffer",0,0,0,0,0,0],["Total",1,0,0,1,1,1]]},"permissionMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",0.443615128125,0,0,0.443615128125,0.443615128125,1]]},"row":{"prev":[["Mainline",0,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",0,0,null,0,0,0]],"curr":[["Mainline",1,0,0,0,0,0],["Buffer",0,0,0,0,0,0],["Total",1,0,0,0,0,0]]},"rowMileage":{"prev":[["Total",0,0,0,0,0,0]],"curr":[["Total",0.443615128125,0,0,0,0,0]]}}};
 
@@ -603,6 +618,9 @@ const TABLE_DEFS = {
 };
 
 function pct(n,d){ return d>0 ? (n/d*100) : 0; }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function fmtVal(v, isMileage){
   if (v === null || v === undefined) return '—';
   if (isMileage) return v.toFixed(2);
@@ -1243,10 +1261,36 @@ function overviewCard(p){
         <div class="ov-stage-pct">${s.v.toFixed(0)}%</div>
       </div>`).join('')}
     </div>
+    ${notesBlock(p)}
     <div class="ov-foot">
       <span class="ov-mileage">${mi.total.toFixed(2)} mi total · ${mi.mids[2].toFixed(2)} mi acquired</span>
       <button class="ov-btn" onclick="selectTab('${p.key}')">Open dashboard →</button>
     </div>
+  </div>`;
+}
+
+function notesBlock(p){
+  const wn = WEEKLY_NOTES[p.key];
+  if (!wn) return '';
+  const highlights = wn.highlights || [];
+  const actionItems = wn.actionItems || [];
+  if (!highlights.length && !actionItems.length) return '';
+  const periodStr = wn.reportingPeriod ? ` · Reporting period ${escapeHtml(wn.reportingPeriod)}` : '';
+  const highlightsHtml = highlights.length
+    ? `<div class="ov-notes-group">
+        <div class="ov-notes-label">${escapeHtml(wn.highlightsHeading || 'Weekly Notes')}</div>
+        <ul class="ov-notes-list">${highlights.map(h => `<li>${escapeHtml(h)}</li>`).join('')}</ul>
+      </div>`
+    : '';
+  const actionHtml = actionItems.length
+    ? `<div class="ov-notes-group">
+        <div class="ov-notes-label">Rolling Action Items</div>
+        <ul class="ov-notes-list">${actionItems.map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+      </div>`
+    : '';
+  return `<div class="ov-notes">
+    <div class="ov-notes-heading">Weekly Notes${periodStr}</div>
+    ${highlightsHtml}${actionHtml}
   </div>`;
 }
 
