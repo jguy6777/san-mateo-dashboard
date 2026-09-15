@@ -90,6 +90,16 @@
     margin-bottom: 28px;
     border-bottom: 1px solid var(--line);
   }
+  @media (max-width: 700px){
+    nav.tabs{
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav.tabs::-webkit-scrollbar{ display:none; }
+    nav.tabs button{ flex: none; white-space: nowrap; margin-right: 18px; padding: 12px 4px 14px; }
+  }
   nav.tabs button{
     font-family: var(--font-sans);
     background: none;
@@ -340,9 +350,8 @@
   input.search.wide-search{ width: 340px; max-width: 100%; }
 
   .ov-grid{
-    display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    display:grid; grid-template-columns: 1fr; gap: 16px;
   }
-  @media (max-width: 860px){ .ov-grid{ grid-template-columns: 1fr; } }
 
   .ov-card{
     background: var(--panel);
@@ -535,6 +544,41 @@
     font-family: var(--font-sans); font-size: 12px;
   }
   .leaflet-tooltip-top:before{ border-top-color: var(--line); }
+
+  /* Mobile: loosen up the desktop-dense sizing for readability and touch targets */
+  @media (max-width: 640px){
+    body{ padding: 20px 12px 40px; }
+    header.top{ gap: 10px; padding-bottom: 16px; margin-bottom: 18px; }
+    h1{ font-size: 20px; }
+    .report-date{ text-align:left; }
+
+    .card{ padding: 14px 14px 12px; }
+    .card h2{ font-size: 14px; }
+    .card .sub{ font-size: 11.5px; }
+
+    table.rows td{ padding: 8px 0; font-size: 12.5px; }
+    table.rows th{ font-size: 10px; }
+
+    table.detail th{ padding: 9px 8px; font-size: 10.5px; }
+    table.detail td{ padding: 9px 8px; font-size: 12.5px; }
+    .mono{ font-size: 11.5px; }
+    .more{ font-size: 10.5px; }
+    .landowner-link{ font-size: 13px; }
+    .landowner-link.mono-link{ font-size: 12px; }
+
+    .badge{ font-size: 11px; padding: 4px 8px; }
+    .badge-btn{ min-height: 26px; }
+
+    .map-legend-item{ font-size: 13px; padding: 7px 12px; }
+    .map-legend-item i{ width: 12px; height: 12px; }
+
+    input.search{ width: 100%; font-size: 14px; padding: 10px 12px; }
+
+    .tract-popup{ padding: 18px 16px; }
+    .tract-popup-close{ width: 32px; height: 32px; }
+
+    .leaflet-bar a{ width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -818,6 +862,10 @@ function showTractNote(prospect, tractId){
 function closeTractNote(){
   document.getElementById('tractPopupOverlay').classList.remove('active');
   if (openTractProjectKey) {
+    if (OPEN_TOOLTIP[openTractProjectKey]) {
+      OPEN_TOOLTIP[openTractProjectKey].closeTooltip();
+      OPEN_TOOLTIP[openTractProjectKey] = null;
+    }
     zoomToProjectExtent(openTractProjectKey);
     openTractProjectKey = null;
   }
@@ -940,7 +988,7 @@ function parcelMapCard(p){
     `<button type="button" class="map-legend-item route-item" id="route-btn-${p.key}-${i}" onclick="toggleRouteLayer('${p.key}',${i})"><i class="route-swatch" style="border-top-color:${rg.color}"></i>${rg.name}</button>`
   ).join('');
   return `<div class="card status-card parcel-map-card">
-    <h2>Parcel Map</h2>
+    <h2>Acquisition Map</h2>
     <div class="sub">${p.name} · ${withGeo.length} of ${rows.length} tracts mapped · click a parcel or a status below</div>
     <div id="map-${p.key}" class="parcel-map"></div>
     <div class="map-legend" id="legend-${p.key}">${allBtn}${legend}${routeSwatches}</div>
@@ -1093,6 +1141,8 @@ function statusBadgeButton(prospect, val){
   return `<button type="button" class="badge ${cls} badge-btn" onclick="event.stopPropagation(); toggleStatusFilter('${p.key}','${key}'); scrollToMapIfNeeded('${p.key}');">${val || '—'}</button>`;
 }
 
+const OPEN_TOOLTIP = {};
+
 function highlightParcel(prospect, tractId){
   const p = findProjectByProspect(prospect);
   if (!p) return;
@@ -1103,7 +1153,11 @@ function highlightParcel(prospect, tractId){
   if (!poly) return;
   rec.map.flyToBounds(poly.getBounds(), { maxZoom: 15, duration: 0.6 });
   poly.setStyle({ weight: 4, fillOpacity: 0.7, opacity: 1 });
+  if (OPEN_TOOLTIP[p.key] && OPEN_TOOLTIP[p.key] !== poly) {
+    OPEN_TOOLTIP[p.key].closeTooltip();
+  }
   poly.openTooltip();
+  OPEN_TOOLTIP[p.key] = poly;
   setTimeout(() => poly.setStyle(layerStyle(p.key, poly)), 1800);
 }
 
