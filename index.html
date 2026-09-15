@@ -630,7 +630,10 @@ function weekBlock(rowsArr, weekLabel, def){
     out += `<tr><td class="rowlabel">${r.label}</td><td class="num">${fmtVal(r.total, def.isMileage)}</td>`;
     r.mids.forEach(v => out += `<td class="num">${fmtVal(v, def.isMileage)}</td>`);
     out += `<td class="num ${changeCls}">${changeStr}</td>`;
-    out += `<td class="num">${r.pctVal === null || r.pctVal === undefined ? '—' : (r.pctVal*100).toFixed(0)+'%'}</td></tr>`;
+    const pctDisplay = (r.pctVal === null || r.pctVal === undefined)
+      ? (r.total > 0 ? Math.round(r.mids[def.doneIdx] / r.total * 100) + '%' : '—')
+      : (r.pctVal * 100).toFixed(0) + '%';
+    out += `<td class="num">${pctDisplay}</td></tr>`;
   });
   out += `</tbody></table></div>`;
   return out;
@@ -1274,7 +1277,7 @@ tabsEl.appendChild(overviewBtn);
 projects.forEach((p, i) => {
   const btn = document.createElement('button');
   btn.dataset.key = p.key;
-  btn.innerHTML = `${p.name}<span class="n">${fmtVal(tractCount(p))} tracts · ${overallPct(p)}% avg progress</span>`;
+  btn.innerHTML = `${p.name}<span class="n">${fmtVal(tractCount(p))} tracts</span>`;
   btn.addEventListener('click', () => selectTab(p.key));
   tabsEl.appendChild(btn);
 
