@@ -31,7 +31,7 @@
     --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0; overflow-x:clip;}
+  html,body{margin:0;padding:0;}
   body{
     background: radial-gradient(1200px 800px at 12% -10%, #1e2f52 0%, var(--bg) 55%);
     color: var(--ink);
@@ -178,7 +178,8 @@
     font-size: 11px; color: var(--ink-faint); margin-bottom: 10px;
   }
 
-  table.rows{ width:100%; border-collapse: collapse; margin-bottom: 4px; }
+  table.rows{ width:100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 4px; }
+  table.rows th:first-child, table.rows td:first-child{ width: 34%; }
   table.rows th{
     text-align:left; font-size: 9.5px; font-weight:500; color: var(--ink-faint);
     padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
@@ -189,7 +190,7 @@
     vertical-align: middle;
   }
   table.rows tr:last-child td{ border-bottom: none; font-weight:600; }
-  table.rows td.rowlabel{ color: var(--ink-dim); }
+  table.rows td.rowlabel{ color: var(--ink-dim); overflow-wrap: break-word; word-break: break-word; }
   tr:last-child td.rowlabel{ color: var(--ink); }
   td.bar-cell{ width: 34%; }
   .stackbar{ height: 8px; border-radius: 4px; overflow:hidden; display:flex; background: var(--line-soft); }
