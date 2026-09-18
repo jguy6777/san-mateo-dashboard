@@ -591,7 +591,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const LAST_UPDATED = "09/18/2026 · 3:34 PM CDT";
+const LAST_UPDATED = "09/18/2026 · 3:35 PM CDT";
 const REPORT_DATE = "September 18, 2026";
 
 // ---- Tract-level detail, deduplicated by TRACT_ID from RAW DATA ----
@@ -719,7 +719,7 @@ function tractTable(p){
       ${hasSub ? `<td>${t.subproject || '—'}</td>` : ''}
       <td><button class="landowner-link" data-prospect="${p.prospect}" data-tract-id="${t.id}">${t.owners[0]}</button>${t.owners.length>1 ? ` <span class="more">+${t.owners.length-1} more</span>` : ''}</td>
       <td>${t.county}, ${t.state}</td>
-      <td class="mono">${t.ami === 'MAINLINE' ? 'ML' : 'BUF'}</td>
+      <td class="mono">${/MAINLINE/.test(t.ami || '') ? 'ML' : 'BUF'}</td>
       <td class="num mono">${t.rods > 0 ? (t.rods/320).toFixed(2)+' mi' : '—'}</td>
       <td>${badge(t.survey_packet)}</td>
       <td>${badge(t.title)}</td>
@@ -833,7 +833,7 @@ function showTractNote(prospect, tractId){
     </div>
     <div class="tract-popup-grid">
       <div class="item"><div class="label">County</div><div class="val">${t.county}, ${t.state}</div></div>
-      <div class="item"><div class="label">Segment</div><div class="val">${t.ami === 'MAINLINE' ? 'Mainline' : 'Buffer'}</div></div>
+      <div class="item"><div class="label">Segment</div><div class="val">${/MAINLINE/.test(t.ami || '') ? 'Mainline' : 'Buffer'}</div></div>
       <div class="item"><div class="label">Length</div><div class="val">${lengthStr}</div></div>
     </div>
     <div class="tract-popup-badges">
