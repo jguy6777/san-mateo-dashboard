@@ -1291,7 +1291,6 @@ function notesBlock(p){
   const periodStr = wn.reportingPeriod ? ` · Reporting period ${escapeHtml(wn.reportingPeriod)}` : '';
   const highlightsHtml = highlights.length
     ? `<div class="ov-notes-group">
-        <div class="ov-notes-label">${escapeHtml(wn.highlightsHeading || 'Weekly Notes')}</div>
         <ul class="ov-notes-list">${highlights.map(h => `<li>${escapeHtml(h)}</li>`).join('')}</ul>
       </div>`
     : '';
