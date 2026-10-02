@@ -612,6 +612,76 @@
   }
   .map-view-btn:hover{ background: var(--green-glow); }
 
+  /* ---------- "New for …" flyover ---------- */
+  .map-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .new-btn{
+    flex:none; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; color: var(--ink);
+    background: var(--green-glow); border: 1px solid var(--green-soft); border-radius: 999px;
+    padding: 7px 13px 7px 9px; white-space: nowrap;
+    transition: box-shadow .2s, transform .15s;
+  }
+  .new-btn:hover{ box-shadow: 0 0 0 4px var(--green-glow); }
+  .new-btn:active{ transform: scale(.97); }
+  .new-btn:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
+  .new-btn .play{
+    width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: var(--panel);
+    display:inline-flex; align-items:center; justify-content:center; font-size: 9px; padding-left: 2px;
+  }
+  .new-btn .n{ font-family: var(--font-mono); font-size: 11.5px; color: var(--green); font-weight: 600; }
+  .map-stage{ position: relative; margin-top: 14px; }
+  .map-stage .parcel-map{ margin-top: 0; }
+  .fly-ui{ position:absolute; inset:0; z-index: 900; pointer-events:none; display:none; border-radius: 10px; overflow:hidden; }
+  .map-stage.flying .fly-ui{ display:block; }
+  .fly-bar{ position:absolute; left:0; right:0; height: 0; background:#0b0f17; transition: height .6s ease; }
+  .fly-bar.top{ top:0; } .fly-bar.bottom{ bottom:0; }
+  .map-stage.flying .fly-bar{ height: 7%; }
+  .fly-title{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; color:#fff; background: rgba(11,15,23,0.55); opacity:0; transition: opacity .7s ease;
+    padding: 0 24px;
+  }
+  .fly-title.show{ opacity:1; }
+  .fly-kicker{ font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #c9d98f; }
+  .fly-headline{ font-size: clamp(20px, 3vw, 34px); font-weight: 600; margin-top: 6px; line-height:1.2; }
+  .fly-caption{
+    position:absolute; left: 18px; bottom: calc(7% + 16px); max-width: calc(100% - 36px);
+    background: rgba(11,15,23,0.78); color:#fff; border-left: 3px solid #9ecb4a;
+    padding: 10px 14px; border-radius: 4px; opacity:0; transform: translateY(8px);
+    transition: opacity .45s ease, transform .45s ease;
+  }
+  .fly-caption.show{ opacity:1; transform:none; }
+  .fly-count{ font-family: var(--font-mono); font-size: 11px; letter-spacing:.1em; color:#c9d98f; text-transform:uppercase; }
+  .fly-owner{ font-size: 16px; font-weight: 600; margin-top: 2px; }
+  .fly-meta{ font-family: var(--font-mono); font-size: 12px; color: #c5cede; margin-top: 2px; }
+  .fly-progress{ position:absolute; left: 18px; right: 18px; top: calc(7% + 12px); display:flex; gap:4px; }
+  .fly-progress i{ flex:1; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.28); overflow:hidden; position:relative; }
+  .fly-progress i.done::after, .fly-progress i.cur::after{ content:''; position:absolute; inset:0; background:#9ecb4a; }
+  .fly-progress i.cur::after{ animation: flyfill var(--seg, 4s) linear forwards; transform-origin:left; }
+  .map-stage.paused .fly-progress i.cur::after{ animation-play-state: paused; }
+  @keyframes flyfill{ from{ transform: scaleX(0); } to{ transform: scaleX(1); } }
+  .fly-controls{ position:absolute; right: 14px; bottom: calc(7% + 14px); display:flex; gap:6px; pointer-events:auto; }
+  .fly-btn{
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600; color:#fff; cursor:pointer;
+    background: rgba(11,15,23,0.72); border: 1px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 6px 10px;
+  }
+  .fly-btn:hover{ background: rgba(11,15,23,0.9); border-color: rgba(255,255,255,0.5); }
+  .fly-btn[data-act="replay"]{ display:none; }
+  .map-stage.ended .fly-btn[data-act="replay"]{ display:inline-block; }
+  .map-stage.ended .fly-btn[data-act="pause"], .map-stage.ended .fly-btn[data-act="next"]{ display:none; }
+  /* cinematic full-screen while playing */
+  body.flyover-open{ overflow:hidden; }
+  body.flyover-open .parcel-map-card{ z-index: 3000; }
+  .map-stage.flying{
+    position: fixed; inset: 0; margin: 0; z-index: 3000; background:#0b0f17;
+  }
+  .map-stage.flying .parcel-map{ height: 100vh !important; border-radius: 0; border: 0; }
+  .map-stage.flying .fly-ui{ border-radius: 0; }
+  .map-stage.flying .leaflet-control-zoom{ display:none; }
+  .fly-pulse{ animation: flypulse 1.4s ease-in-out infinite; }
+  @keyframes flypulse{ 0%,100%{ stroke-opacity: 1; } 50%{ stroke-opacity: .35; } }
+  @media (prefers-reduced-motion: reduce){ .fly-pulse{ animation:none; } }
+
   /* Leaflet dark-theme touches */
   .leaflet-container{ background: var(--panel-2); font-family: var(--font-sans); }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip{ background: var(--panel); color: var(--ink); }
@@ -670,6 +740,8 @@
 <script>
 const LAST_UPDATED = "09/25/2026 · 3:52 PM CDT";
 const REPORT_DATE = "September 25, 2026";
+const PREV_REPORT_DATE = "September 18, 2026";
+const PREV_STATUS = {"BL-TX-LV-001": "SURVEY PERMISSION ACQUIRED", "BL-TX-LV-002": "OPEN", "BL-TX-LV-002.1": "SURVEY PERMISSION ACQUIRED", "BL-TX-LV-003.1": "OPEN", "BL-TX-LV-005": "SURVEY PERMISSION ACQUIRED", "BL-TX-LV-006": "OPEN", "BL-TX-LV-007": "OPEN", "BL-TX-LV-008": "OPEN", "BL-TX-LV-009": "OPEN", "BL-TX-LV-010": "OPEN", "DWM-TX-LV-001": "SURVEY PERMISSION ACQUIRED", "DWM-TX-LV-002": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-001": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-002": "OPEN", "DWM-TX-RV-003": "OPEN", "DWM-TX-RV-004": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-005": "OPEN", "DWM-TX-RV-006": "OPEN", "DWM-TX-RV-007": "OPEN", "DWM-TX-RV-007.1": "OPEN", "DWM-TX-RV-008": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-009": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-009.1": "OPEN", "DWM-TX-RV-010": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-011": "OPEN", "DWM-TX-RV-012": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-013": "OPEN", "DWM-TX-RV-014": "OPEN", "DWM-TX-RV-014.1": "OPEN", "DWM-TX-RV-015": "OPEN", "DWM-TX-RV-016": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-017": "OPEN", "DWM-TX-RV-018": "WORKING", "DWM-TX-RV-019": "WORKING", "DWM-TX-RV-020": "OPEN", "DWM-TX-RV-021": "OPEN", "DWM-TX-RV-022": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS", "DWM-TX-RV-023": "SURVEY PERMISSION ACQUIRED", "DWM-TX-RV-024": "OPEN", "DWM-TX-RV-025": "OPEN", "BBM-TX-LV-001": "OPEN", "BBM-TX-LV-002": "OPEN", "RLL-TX-LV-001": "SURVEY PERMISSION ACQUIRED", "RLL-TX-LV-002": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS", "RLL-TX-LV-003": "SURVEY PERMISSION ACQUIRED", "RLL-TX-LV-004": "SURVEY PERMISSION ACQUIRED", "RLL-TX-LV-005": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS", "RLL-TX-LV-006": "SURVEY PERMISSION ACQUIRED", "RLL-TX-LV-007": "SURVEY PERMISSION ACQUIRED", "SBWW-TX-LV-001": "SURVEY PERMISSION ACQUIRED"};
 
 // ---- Tract-level detail, deduplicated by TRACT_ID from RAW DATA ----
 const TRACTS = {"WOLF GAS GATHERING TO PECOS RIVER SYSTEM": [{"id": "BL-TX-LV-001", "owners": ["LARRY R WOLLSCHLAGER"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - MAINLINE", "rods": 243.6905522, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-002", "owners": ["LOVING COUNTY-CO ROAD 300"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - MAINLINE", "rods": 317.5709529, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-002.1", "owners": ["JONES P&M FAMILY RANCH INC"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-003.1", "owners": ["ZPZ DELAWARE I LLC"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - MAINLINE", "rods": 257.963031, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "OPEN", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-005", "owners": ["3:16 DISPOSAL SYSTEMS IV LLC"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-006", "owners": ["WILLIAMS FAMILY TR UNDER TR DECL"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-007", "owners": ["GEORGE & BETTY GRAY LV TR 1998"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-008", "owners": ["JUANITA ALLEN BARNETT IRREV INCOME TR"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-009", "owners": ["JUANITA ALLEN BARNETT IRREV INCOME TR"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - MAINLINE", "rods": 59.650489, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "BL-TX-LV-010", "owners": ["LOVING COUNTY"], "county": "LOVING", "state": "TX", "ami": "BARNETT LOOP - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Barnett Loop"}, {"id": "DWM-TX-LV-001", "owners": ["MHKERR LLC"], "county": "LOVING", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 129.141172, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-LV-002", "owners": ["LARRY R WOLLSCHLAGER"], "county": "LOVING", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 153.895046, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-001", "owners": ["MES LAND & MINERALS LP"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 86.294466, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-002", "owners": ["MICHAEL A & WILLIAM O HARRISON"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 32.117201, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-003", "owners": ["EVELYN M NAUMANN HAGEL"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 42.393416, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-004", "owners": ["DELAWARE BASIN RANCHES LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 129.701391, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-005", "owners": ["LUCY H SIEVERS TRUST"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 247.827653, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-006", "owners": ["MULTIPLE OWNERS"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 26.8688, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-007", "owners": ["MICHAEL A & WILLIAM O HARRISON"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 89.492344, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-007.1", "owners": ["ATCHINSON TOPEKA & SANTA FE RR"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-008", "owners": ["ANADARKO E&P ONSHORE LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 101.665225, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-009", "owners": ["ANADARKO E&P ONSHORE LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 134.641154, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-009.1", "owners": ["ALICE CALDERWOOD HAWK"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 8.375988, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-010", "owners": ["GORDON K COSTLEY"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 21.999943, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-011", "owners": ["ESTATE OF POLLARD KERRY KATHLEEN"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 21.999916, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-012", "owners": ["GORDON K COSTLEY"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 21.999831, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-013", "owners": ["ROYAL FLUSH OIL LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 21.999784, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-014", "owners": ["ANADARKO PETROLEUM CORP.", "FAYE MCFEEDERS", "ROCK RIDGE ROYALTY CO.", "VINCENT RONDINELLA", "DAVID THIELE"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 52.910424, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-014.1", "owners": ["ESTATE OF GRACE GIMLIN"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-015", "owners": ["GALBRAITH FAMILY TRUST"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 35.087076, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-016", "owners": ["ANADARKO E&P ONSHORE LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 87.995092, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-017", "owners": ["DESERT HOLDINGS LLC", "DESERT PARTNERS VI LP"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 26.465412, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-018", "owners": ["MALLARD MARGARET REV TRUST"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 170.894122, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "WORKING", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-019", "owners": ["SIDNEY MALLARD"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 107.604304, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "WORKING", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-020", "owners": ["ESTATE OF MARY W COOKE"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 182.418993, "survey_packet": "COMPLETE", "title": "SURFACE TITLE WORKING", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-021", "owners": ["BTA OIL PRODUCERS LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 75.727411, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-022", "owners": ["LINDA GREEN"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 73.144506, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-023", "owners": ["ROCA DEVELOPMENT LLC"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 164.013068, "survey_packet": "COMPLETE", "title": "SURFACE TITLE COMPLETE", "tract_status": "SURVEY PERMISSION ACQUIRED", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-024", "owners": ["CHARLES HUNTER STRAIN FAMILY TRUST", "DAVID STRAIN", "DEBORAH STRAIN", "DUESING CLAIRE STRAIN", "MARTHA STRAIN WILKINSON"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OFFLINE", "subproject": "Dorothy White to Mentone CS"}, {"id": "DWM-TX-RV-025", "owners": ["STATE OF TEXAS"], "county": "REEVES", "state": "TX", "ami": "DOROTHY WHITE TO MENTONE CS - MAINLINE", "rods": 7.39739, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Dorothy White to Mentone CS"}, {"id": "BBM-TX-LV-001", "owners": ["HARLAN HOPPER"], "county": "LOVING", "state": "TX", "ami": "BILLY BURT TO MENTONE CS - MAINLINE", "rods": 6.798913, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Billy Burt to Mentone CS"}, {"id": "BBM-TX-LV-002", "owners": ["ZPZ DELAWARE I LLC"], "county": "LOVING", "state": "TX", "ami": "BILLY BURT TO MENTONE CS - BUFFER", "rods": 0, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "OPEN", "subproject": "Billy Burt to Mentone CS"}], "PECOS RIVER PLANT TO SAND BEND LOOP": [{"id": "RLL-TX-LV-001", "owners": ["TEXAS PACIFIC RESOURCES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 170.9282272, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}, {"id": "RLL-TX-LV-002", "owners": ["DELAWARE BASIN RANCHES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 325.2740553, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS"}, {"id": "RLL-TX-LV-003", "owners": ["TEXAS PACIFIC RESOURCES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 271.129293, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}, {"id": "RLL-TX-LV-004", "owners": ["BOARD OF REGENTS OF TEXAS A&M UNI SYS"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 77.44242492, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}, {"id": "RLL-TX-LV-005", "owners": ["DELAWARE BASIN RANCHES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 337.6772372, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED-W/CONDITIONS"}, {"id": "RLL-TX-LV-006", "owners": ["BOARD OF REGENTS OF TEXAS A&M UNI SYS"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 399.4179, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}, {"id": "RLL-TX-LV-007", "owners": ["TEXAS PACIFIC RESOURCES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 248.4767, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}], "SB TO WW LOOP LINE": [{"id": "SBWW-TX-LV-001", "owners": ["TEXAS PACIFIC RESOURCES LLC"], "county": "LOVING", "state": "TX", "ami": "MAINLINE", "rods": 141.956841, "survey_packet": "COMPLETE", "title": "NO TITLE", "tract_status": "SURVEY PERMISSION ACQUIRED"}]};
@@ -1065,12 +1137,200 @@ function parcelMapCard(p){
     `<button type="button" class="map-legend-item route-item" id="route-btn-${p.key}-${i}" onclick="toggleRouteLayer('${p.key}',${i})"><i class="route-swatch" style="border-top-color:${rg.color}"></i>${rg.name}</button>`
   ).join('');
   return `<div class="card status-card parcel-map-card">
-    <h2>Acquisition Map</h2>
-    <div class="sub">${p.name} · ${withGeo.length} of ${rows.length} tracts mapped · click a parcel or a status below</div>
-    <div id="map-${p.key}" class="parcel-map"></div>
+    <div class="map-head">
+      <div>
+        <h2>Acquisition Map</h2>
+        <div class="sub">${p.name} · ${withGeo.length} of ${rows.length} tracts mapped · click a parcel or a status below</div>
+      </div>
+      ${newTractsButton(p)}
+    </div>
+    <div class="map-stage" id="stage-${p.key}">
+      <div id="map-${p.key}" class="parcel-map"></div>
+      <div class="fly-ui" id="fly-${p.key}" aria-live="polite">
+        <div class="fly-bar top"></div><div class="fly-bar bottom"></div>
+        <div class="fly-title"><div class="fly-kicker"></div><div class="fly-headline"></div></div>
+        <div class="fly-caption"><div class="fly-count"></div><div class="fly-owner"></div><div class="fly-meta"></div></div>
+        <div class="fly-progress"></div>
+        <div class="fly-controls">
+          <button type="button" class="fly-btn" data-act="pause" onclick="flyoverCmd('${p.key}','pause')">Pause</button>
+          <button type="button" class="fly-btn" data-act="next" onclick="flyoverCmd('${p.key}','next')">Skip ›</button>
+          <button type="button" class="fly-btn" data-act="replay" onclick="playFlyover('${p.key}')">Replay</button>
+          <button type="button" class="fly-btn" data-act="close" onclick="flyoverCmd('${p.key}','close')" aria-label="Close flyover">✕</button>
+        </div>
+      </div>
+    </div>
     <div class="map-legend" id="legend-${p.key}">${allBtn}${legend}${routeSwatches}</div>
   </div>`;
 }
+
+/* ---------- "New for <report date>" flyover ---------- */
+function shortDate(d){
+  const dt = new Date(d);
+  return isNaN(dt) ? d : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function newlyAcquired(p){
+  if (!PREV_STATUS || !Object.keys(PREV_STATUS).length) return [];
+  return (TRACTS[p.prospect] || []).filter(t =>
+    bucketForStatus(t.tract_status) === 'Acquired' &&
+    bucketForStatus(PREV_STATUS[t.id]) !== 'Acquired' &&
+    PARCELS[t.id]);
+}
+function newTractsButton(p){
+  const list = newlyAcquired(p);
+  if (!list.length) return '';
+  return `<button type="button" class="new-btn" onclick="playFlyover('${p.key}')"
+    title="Fly to tracts acquired since ${escapeHtml(PREV_REPORT_DATE)}">
+    <span class="play">▶</span>New for ${escapeHtml(shortDate(REPORT_DATE))}<span class="n">${list.length}</span></button>`;
+}
+
+const FLY = {};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+async function flyWait(key, ms){
+  // waits ms of *playing* time; resolves early on skip/close
+  const st = FLY[key];
+  let left = ms;
+  while (left > 0) {
+    if (!st || st.cancel || st.skip) return;
+    await sleep(100);
+    if (!st.paused) left -= 100;
+  }
+}
+function flyMove(key, bounds, opts){
+  const st = FLY[key]; const map = MAPS[key].map;
+  return new Promise(res => {
+    if (st.cancel) return res();
+    const done = () => { map.off('moveend', done); res(); };
+    map.on('moveend', done);
+    if (REDUCED) map.fitBounds(bounds, Object.assign({}, opts, { animate: false }));
+    else map.flyToBounds(bounds, opts);
+    setTimeout(done, ((opts && opts.duration) || 1) * 1000 + 800);
+  });
+}
+
+async function playFlyover(key){
+  const p = projects.find(pr => pr.key === key);
+  if (!p) return;
+  initProjectMap(p);
+  const rec = MAPS[key];
+  if (!rec) return;
+  if (FLY[key]) FLY[key].cancel = true;
+  const list = newlyAcquired(p);
+  if (!list.length) return;
+  const st = FLY[key] = { cancel:false, paused:false, skip:false };
+
+  STATUS_FILTER[key] = null; applyStatusFilter(key);
+  const stage = document.getElementById('stage-' + key);
+  const ui = document.getElementById('fly-' + key);
+  const title = ui.querySelector('.fly-title'), cap = ui.querySelector('.fly-caption');
+  const prog = ui.querySelector('.fly-progress');
+  const pauseBtn = ui.querySelector('[data-act="pause"]');
+  pauseBtn.textContent = 'Pause';
+  stage.classList.remove('ended', 'paused');
+  stage.classList.add('flying');
+  document.body.classList.add('flyover-open');
+  rec.map.invalidateSize();
+  cap.classList.remove('show');
+  prog.innerHTML = list.map(() => '<i></i>').join('');
+
+  const newIds = new Set(list.map(t => t.id));
+  const polyOf = id => rec.layers.find(l => l._tractId === id);
+  // dim everything except this week's new tracts
+  rec.layers.forEach(poly => poly.setStyle(newIds.has(poly._tractId)
+    ? { weight: 1.5, opacity: 0.9, fillOpacity: 0.35 }
+    : { weight: 1, opacity: 0.25, fillOpacity: 0.06 }));
+  const miles = list.reduce((a, t) => a + (t.rods || 0), 0) / 320;
+
+  // opening title over the whole project
+  ui.querySelector('.fly-kicker').textContent = `New for ${REPORT_DATE}`;
+  ui.querySelector('.fly-headline').innerHTML =
+    `${list.length} tract${list.length > 1 ? 's' : ''} acquired · ${miles.toFixed(2)} mi<br><span style="font-size:.55em;font-weight:500;opacity:.8">${escapeHtml(p.name)}</span>`;
+  title.classList.add('show');
+  if (rec.bounds && rec.bounds.isValid()) await flyMove(key, rec.bounds, { padding: [40, 40], duration: 1.2 });
+  await flyWait(key, 2600);
+  title.classList.remove('show');
+  st.skip = false;
+
+  const bars = prog.querySelectorAll('i');
+  for (let i = 0; i < list.length; i++) {
+    if (st.cancel) break;
+    const t = list[i], poly = polyOf(t.id);
+    bars.forEach((b, j) => { b.className = j < i ? 'done' : ''; });
+    cap.classList.remove('show');
+    if (poly) {
+      await flyMove(key, poly.getBounds(), { padding: [90, 90], maxZoom: 16, duration: 2.4 });
+      if (st.cancel) break;
+      poly.setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillColor: statusColor(t.tract_status), fillOpacity: 0.65 });
+      poly.bringToFront();
+      if (poly._path) poly._path.classList.add('fly-pulse');
+    }
+    const owners = t.owners.length > 1 ? `${t.owners[0]} +${t.owners.length - 1}` : (t.owners[0] || '');
+    ui.querySelector('.fly-count').textContent = `${i + 1} of ${list.length} · newly acquired`;
+    ui.querySelector('.fly-owner').textContent = owners;
+    ui.querySelector('.fly-meta').textContent =
+      [t.id, t.subproject, t.county ? t.county + ' Co.' : '', t.rods > 0 ? (t.rods / 320).toFixed(2) + ' mi' : '',
+       `${(PREV_STATUS[t.id] || 'NEW').toLowerCase()} → acquired`].filter(Boolean).join(' · ');
+    cap.classList.add('show');
+    bars[i].style.setProperty('--seg', '3.2s');
+    bars[i].className = 'cur';
+    await flyWait(key, 3200);
+    st.skip = false;
+    if (poly) {
+      if (poly._path) poly._path.classList.remove('fly-pulse');
+      poly.setStyle({ color: statusColor(t.tract_status), weight: 2.5, opacity: 1, fillOpacity: 0.55 });
+    }
+  }
+  if (st.cancel) return;
+
+  // finale: all new tracts together
+  bars.forEach(b => b.className = 'done');
+  cap.classList.remove('show');
+  const group = L.featureGroup(list.map(t => polyOf(t.id)).filter(Boolean));
+  await flyMove(key, group.getBounds(), { padding: [70, 70], maxZoom: 15, duration: 2 });
+  ui.querySelector('.fly-count').textContent = `New for ${REPORT_DATE}`;
+  ui.querySelector('.fly-owner').textContent = `${list.length} tracts · ${miles.toFixed(2)} mi acquired`;
+  ui.querySelector('.fly-meta').textContent = `since ${PREV_REPORT_DATE}`;
+  cap.classList.add('show');
+  stage.classList.add('ended');
+}
+
+function flyoverCmd(key, cmd){
+  const st = FLY[key];
+  const stage = document.getElementById('stage-' + key);
+  if (cmd === 'pause' && st) {
+    st.paused = !st.paused;
+    stage.classList.toggle('paused', st.paused);
+    stage.querySelector('[data-act="pause"]').textContent = st.paused ? 'Play' : 'Pause';
+  } else if (cmd === 'next' && st) {
+    st.skip = true; st.paused = false;
+    stage.classList.remove('paused');
+    stage.querySelector('[data-act="pause"]').textContent = 'Pause';
+  } else if (cmd === 'close') {
+    if (st) st.cancel = true;
+    stage.classList.remove('flying', 'ended', 'paused');
+    document.body.classList.remove('flyover-open');
+    const rec = MAPS[key];
+    if (rec) {
+      rec.map.stop();
+      rec.layers.forEach(poly => { if (poly._path) poly._path.classList.remove('fly-pulse'); });
+      rec.map.invalidateSize();
+      applyStatusFilter(key);
+      // leave the view on this week's new tracts
+      const p = projects.find(pr => pr.key === key);
+      const ids = new Set(newlyAcquired(p).map(t => t.id));
+      const g = L.featureGroup(rec.layers.filter(l => ids.has(l._tractId)));
+      if (g.getLayers().length) rec.map.fitBounds(g.getBounds(), { padding: [30, 30], maxZoom: 15 });
+    }
+  }
+}
+document.addEventListener('keydown', e => {
+  const key = Object.keys(FLY).find(k => document.getElementById('stage-' + k)?.classList.contains('flying'));
+  if (!key) return;
+  if (e.key === 'Escape') { e.stopPropagation(); flyoverCmd(key, 'close'); }
+  else if (e.key === ' ') { e.preventDefault(); flyoverCmd(key, 'pause'); }
+  else if (e.key === 'ArrowRight') flyoverCmd(key, 'next');
+}, true);
 
 const MAPS = {};
 
