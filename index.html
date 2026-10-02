@@ -620,75 +620,79 @@
   }
   .map-view-btn:hover{ background: var(--green-glow); }
 
-  /* ---------- "New for …" flyover ---------- */
+  /* ---------- "New for …" map view ---------- */
   .map-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
   .new-btn{
     flex:none; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
     font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; color: var(--ink);
     background: var(--green-glow); border: 1px solid var(--green-soft); border-radius: 999px;
-    padding: 7px 13px 7px 9px; white-space: nowrap;
-    transition: box-shadow .2s, transform .15s;
+    padding: 7px 13px 7px 10px; white-space: nowrap; transition: box-shadow .2s, transform .15s;
   }
   .new-btn:hover{ box-shadow: 0 0 0 4px var(--green-glow); }
   .new-btn:active{ transform: scale(.97); }
   .new-btn:focus-visible{ outline: 2px solid var(--green); outline-offset: 2px; }
-  .new-btn .play{
-    width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: var(--panel);
-    display:inline-flex; align-items:center; justify-content:center; font-size: 9px; padding-left: 2px;
-  }
+  .new-btn .dot{ width: 9px; height: 9px; border-radius: 50%; background: var(--st-acquired); box-shadow: 0 0 0 3px var(--green-glow); }
   .new-btn .n{ font-family: var(--font-mono); font-size: 11.5px; color: var(--green); font-weight: 600; }
   .map-stage{ position: relative; margin-top: 14px; }
   .map-stage .parcel-map{ margin-top: 0; }
-  .fly-ui{ position:absolute; inset:0; z-index: 900; pointer-events:none; display:none; border-radius: 10px; overflow:hidden; }
+  .fly-ui{ position:absolute; inset:0; z-index: 900; pointer-events:none; display:none; }
   .map-stage.flying .fly-ui{ display:block; }
-  .fly-bar{ position:absolute; left:0; right:0; height: 0; background:#0b0f17; transition: height .6s ease; }
-  .fly-bar.top{ top:0; } .fly-bar.bottom{ bottom:0; }
-  .map-stage.flying .fly-bar{ height: 7%; }
-  .fly-title{
-    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; color:#fff; background: rgba(11,15,23,0.55); opacity:0; transition: opacity .7s ease;
-    padding: 0 24px;
-  }
-  .fly-title.show{ opacity:1; }
-  .fly-kicker{ font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #c9d98f; }
-  .fly-headline{ font-size: clamp(20px, 3vw, 34px); font-weight: 600; margin-top: 6px; line-height:1.2; }
-  .fly-caption{
-    position:absolute; left: 18px; bottom: calc(7% + 16px); max-width: calc(100% - 36px);
-    background: rgba(11,15,23,0.78); color:#fff; border-left: 3px solid #9ecb4a;
-    padding: 10px 14px; border-radius: 4px; opacity:0; transform: translateY(8px);
-    transition: opacity .45s ease, transform .45s ease;
-  }
-  .fly-caption.show{ opacity:1; transform:none; }
-  .fly-count{ font-family: var(--font-mono); font-size: 11px; letter-spacing:.1em; color:#c9d98f; text-transform:uppercase; }
-  .fly-owner{ font-size: 16px; font-weight: 600; margin-top: 2px; }
-  .fly-meta{ font-family: var(--font-mono); font-size: 12px; color: #c5cede; margin-top: 2px; }
-  .fly-progress{ position:absolute; left: 18px; right: 18px; top: calc(7% + 12px); display:flex; gap:4px; }
-  .fly-progress i{ flex:1; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.28); overflow:hidden; position:relative; }
-  .fly-progress i.done::after, .fly-progress i.cur::after{ content:''; position:absolute; inset:0; background:#9ecb4a; }
-  .fly-progress i.cur::after{ animation: flyfill var(--seg, 4s) linear forwards; transform-origin:left; }
-  .map-stage.paused .fly-progress i.cur::after{ animation-play-state: paused; }
-  @keyframes flyfill{ from{ transform: scaleX(0); } to{ transform: scaleX(1); } }
-  .fly-controls{ position:absolute; right: 14px; bottom: calc(7% + 14px); display:flex; gap:6px; pointer-events:auto; }
-  .fly-btn{
-    font-family: var(--font-sans); font-size: 12px; font-weight: 600; color:#fff; cursor:pointer;
-    background: rgba(11,15,23,0.72); border: 1px solid rgba(255,255,255,0.25); border-radius: 6px; padding: 6px 10px;
-  }
-  .fly-btn:hover{ background: rgba(11,15,23,0.9); border-color: rgba(255,255,255,0.5); }
-  .fly-btn[data-act="replay"]{ display:none; }
-  .map-stage.ended .fly-btn[data-act="replay"]{ display:inline-block; }
-  .map-stage.ended .fly-btn[data-act="pause"], .map-stage.ended .fly-btn[data-act="next"]{ display:none; }
-  /* cinematic full-screen while playing */
   body.flyover-open{ overflow:hidden; }
   body.flyover-open .parcel-map-card{ z-index: 3000; }
-  .map-stage.flying{
-    position: fixed; inset: 0; margin: 0; z-index: 3000; background:#0b0f17;
-  }
+  .map-stage.flying{ position: fixed; inset: 0; margin: 0; z-index: 3000; background:#0b0f17; }
   .map-stage.flying .parcel-map{ height: 100vh !important; border-radius: 0; border: 0; }
-  .map-stage.flying .fly-ui{ border-radius: 0; }
-  .map-stage.flying .leaflet-control-zoom{ display:none; }
-  .fly-pulse{ animation: flypulse 1.4s ease-in-out infinite; }
-  @keyframes flypulse{ 0%,100%{ stroke-opacity: 1; } 50%{ stroke-opacity: .35; } }
-  @media (prefers-reduced-motion: reduce){ .fly-pulse{ animation:none; } }
+  .nv-panel{
+    position:absolute; top: 16px; right: 16px; bottom: 16px; width: 340px; pointer-events:auto;
+    display:flex; flex-direction:column; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.35); overflow:hidden;
+    transform: translateX(24px); opacity: 0; transition: transform .35s ease, opacity .35s ease;
+  }
+  .map-stage.flying .nv-panel{ transform:none; opacity:1; }
+  .nv-head{ position:relative; padding: 16px 44px 12px 16px; border-bottom: 1px solid var(--line-soft); }
+  .nv-kicker{ font-family: var(--font-mono); font-size: 11px; letter-spacing:.12em; text-transform:uppercase; color: var(--green); }
+  .nv-headline{ font-size: 19px; font-weight: 600; margin-top: 4px; line-height: 1.25; }
+  .nv-sub{ font-size: 12px; color: var(--ink-dim); margin-top: 3px; }
+  .nv-close{
+    position:absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 8px; cursor:pointer;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); font-size: 13px;
+  }
+  .nv-close:hover{ border-color: var(--blue-soft); }
+  .nv-all{
+    margin: 10px 12px 4px; align-self:flex-start; cursor:pointer; font-family: var(--font-sans);
+    font-size: 12px; font-weight: 600; color: var(--ink-dim); background: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+  }
+  .nv-all:hover, .nv-all.active{ color: var(--ink); border-color: var(--green-soft); background: var(--green-glow); }
+  .nv-list{ list-style:none; margin:0; padding: 6px 8px 12px; overflow-y:auto; flex:1; }
+  .nv-item{
+    display:grid; grid-template-columns: 26px 1fr; gap: 10px; align-items:start; cursor:pointer;
+    padding: 9px 8px; border-radius: 8px; border: 1px solid transparent; transition: background .15s, border-color .15s;
+  }
+  .nv-item:hover{ background: var(--panel-2); }
+  .nv-item.active{ background: var(--green-glow); border-color: var(--green-soft); }
+  .nv-item:focus-visible{ outline: 2px solid var(--blue); outline-offset: 1px; }
+  .nv-num{
+    width: 24px; height: 24px; border-radius: 50%; display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; color: #0b0f17; background: var(--st-acquired);
+  }
+  .nv-owner{ font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .nv-meta{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+  .nv-change{ font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+  .nv-notes{
+    margin-top: 5px; font-family: var(--font-sans); font-size: 11.5px; font-weight: 600; cursor:pointer;
+    color: var(--green); background:none; border:0; padding:0; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .nv-pin{ background:none; border:0; }
+  .nv-pin span{
+    display:flex; align-items:center; justify-content:center; width: 26px; height: 26px; border-radius: 50%;
+    font: 600 12px var(--font-mono); color:#0b0f17; background: var(--st-acquired);
+    border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.45); transition: transform .15s;
+  }
+  .nv-pin.active span, .nv-pin:hover span{ transform: scale(1.25); background:#fff; }
+  .map-stage.flying .leaflet-control-zoom{ margin-top: 16px; margin-left: 16px; }
+  @media (max-width: 700px){
+    .nv-panel{ top:auto; left: 10px; right: 10px; bottom: 10px; width:auto; max-height: 45vh; }
+  }
 
   /* Leaflet dark-theme touches */
   .leaflet-container{ background: var(--panel-2); font-family: var(--font-sans); }
@@ -1156,16 +1160,17 @@ function parcelMapCard(p){
     </div>
     <div class="map-stage" id="stage-${p.key}">
       <div id="map-${p.key}" class="parcel-map"></div>
-      <div class="fly-ui" id="fly-${p.key}" aria-live="polite">
-        <div class="fly-bar top"></div><div class="fly-bar bottom"></div>
-        <div class="fly-title"><div class="fly-kicker"></div><div class="fly-headline"></div></div>
-        <div class="fly-caption"><div class="fly-count"></div><div class="fly-owner"></div><div class="fly-meta"></div></div>
-        <div class="fly-progress"></div>
-        <div class="fly-controls">
-          <button type="button" class="fly-btn" data-act="pause" onclick="flyoverCmd('${p.key}','pause')">Pause</button>
-          <button type="button" class="fly-btn" data-act="next" onclick="flyoverCmd('${p.key}','next')">Next ›</button>
-          <button type="button" class="fly-btn" data-act="close" onclick="flyoverCmd('${p.key}','close')" aria-label="Close flyover">✕</button>
-        </div>
+      <div class="fly-ui" id="fly-${p.key}">
+        <aside class="nv-panel" aria-label="Newly acquired tracts">
+          <div class="nv-head">
+            <div class="nv-kicker"></div>
+            <div class="nv-headline"></div>
+            <div class="nv-sub"></div>
+            <button type="button" class="nv-close" onclick="closeNewView('${p.key}')" aria-label="Close">✕</button>
+          </div>
+          <button type="button" class="nv-all" onclick="selectNewTract('${p.key}', null)">Show all</button>
+          <ol class="nv-list"></ol>
+        </aside>
       </div>
     </div>
     <div class="map-legend" id="legend-${p.key}">${allBtn}${legend}${routeSwatches}</div>
@@ -1188,169 +1193,184 @@ function newTractsButton(p){
   const list = newlyAcquired(p);
   if (!list.length) return '';
   return `<button type="button" class="new-btn" onclick="playFlyover('${p.key}')"
-    title="Fly to tracts acquired since ${escapeHtml(PREV_REPORT_DATE)}">
-    <span class="play">▶</span>New for ${escapeHtml(shortDate(REPORT_DATE))}<span class="n">${list.length}</span></button>`;
+    title="Show tracts acquired since ${escapeHtml(PREV_REPORT_DATE)}">
+    <span class="dot"></span>New for ${escapeHtml(shortDate(REPORT_DATE))}<span class="n">${list.length}</span></button>`;
 }
 
 const FLY = {};
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-async function flyWait(key, ms){
-  // waits ms of *playing* time (clock-based); resolves early on skip/close
-  const st = FLY[key];
-  let left = ms, last = performance.now();
-  while (left > 0) {
-    if (!st || st.cancel || st.skip) return;
-    await sleep(80);
-    const now = performance.now();
-    if (!st.paused) left -= (now - last);
-    last = now;
-  }
-}
-function flyMove(key, bounds, opts){
-  const st = FLY[key]; const map = MAPS[key].map;
-  return new Promise(res => {
-    if (st.cancel) return res();
-    const done = () => { map.off('moveend', done); res(); };
-    map.on('moveend', done);
-    if (REDUCED) map.fitBounds(bounds, Object.assign({}, opts, { animate: false }));
-    else map.flyToBounds(bounds, opts);
-    setTimeout(done, ((opts && opts.duration) || 1) * 1000 + 800);
-  });
+function nvPadding(){
+  // keep the parcels clear of the side panel (or bottom sheet on phones)
+  return window.innerWidth <= 700
+    ? { paddingTopLeft: [30, 30], paddingBottomRight: [30, Math.round(window.innerHeight * 0.45) + 30] }
+    : { paddingTopLeft: [40, 40], paddingBottomRight: [340 + 56, 40] };
 }
 
-async function playFlyover(key){
-  try { await runFlyover(key); }
-  catch (err) { console.error('flyover', err); flyoverCmd(key, 'close'); }
-}
-async function runFlyover(key){
+function playFlyover(key){
   const p = projects.find(pr => pr.key === key);
   if (!p) return;
   initProjectMap(p);
   const rec = MAPS[key];
   if (!rec) return;
-  if (FLY[key]) FLY[key].cancel = true;
   const list = newlyAcquired(p);
   if (!list.length) return;
-  const st = FLY[key] = { cancel:false, paused:false, skip:false,
-                          scrollY: (FLY[key] && FLY[key].scrollY != null && document.body.classList.contains('flyover-open')) ? FLY[key].scrollY : window.scrollY };
+  if (FLY[key]) closeNewView(key, true);
 
   STATUS_FILTER[key] = null; applyStatusFilter(key);
   const stage = document.getElementById('stage-' + key);
   const ui = document.getElementById('fly-' + key);
-  const title = ui.querySelector('.fly-title'), cap = ui.querySelector('.fly-caption');
-  const prog = ui.querySelector('.fly-progress');
-  const pauseBtn = ui.querySelector('[data-act="pause"]');
-  pauseBtn.textContent = 'Pause';
-  stage.classList.remove('ended', 'paused');
+  const st = FLY[key] = { scrollY: window.scrollY, list, selected: null, pins: [], handlers: [] };
+
+  const miles = list.reduce((a, t) => a + (t.rods || 0), 0) / 320;
+  ui.querySelector('.nv-kicker').textContent = `New for ${REPORT_DATE}`;
+  ui.querySelector('.nv-headline').textContent = `${list.length} tract${list.length > 1 ? 's' : ''} acquired · ${miles.toFixed(2)} mi`;
+  ui.querySelector('.nv-sub').textContent = `${p.name} · since ${PREV_REPORT_DATE}`;
+  ui.querySelector('.nv-list').innerHTML = list.map((t, i) => {
+    const owner = t.owners.length > 1 ? `${t.owners[0]} +${t.owners.length - 1}` : (t.owners[0] || '—');
+    const meta = [t.id, t.subproject, t.rods > 0 ? (t.rods / 320).toFixed(2) + ' mi' : ''].filter(Boolean).join(' · ');
+    const was = (PREV_STATUS[t.id] || 'new tract').toLowerCase();
+    const now = /CONDITIONS/.test(t.tract_status) ? 'acquired w/ conditions' : 'acquired';
+    return `<li class="nv-item" tabindex="0" data-id="${escapeHtml(t.id)}"
+        onclick="selectNewTract('${key}','${escapeHtml(t.id)}')"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectNewTract('${key}','${escapeHtml(t.id)}')}"
+        onmouseenter="hoverNewTract('${key}','${escapeHtml(t.id)}',true)" onmouseleave="hoverNewTract('${key}','${escapeHtml(t.id)}',false)">
+      <span class="nv-num">${i + 1}</span>
+      <div>
+        <div class="nv-owner">${escapeHtml(owner)}</div>
+        <div class="nv-meta">${escapeHtml(meta)}</div>
+        <div class="nv-change">${escapeHtml(was)} → ${now}</div>
+        ${(NOTES[t.id] || []).length ? `<button type="button" class="nv-notes" onclick="event.stopPropagation(); showTractNote('${p.prospect.replace(/'/g, "\\'")}','${escapeHtml(t.id)}')">View notes</button>` : ''}
+      </div>
+    </li>`;
+  }).join('');
+
   stage.classList.add('flying');
   document.body.classList.add('flyover-open');
   rec.map.invalidateSize();
-  cap.classList.remove('show');
-  prog.innerHTML = list.map(() => '<i></i>').join('');
 
-  const newIds = new Set(list.map(t => t.id));
-  const polyOf = id => rec.layers.find(l => l._tractId === id);
-  // dim everything except this week's new tracts
-  rec.layers.forEach(poly => poly.setStyle(newIds.has(poly._tractId)
-    ? { weight: 1.5, opacity: 0.9, fillOpacity: 0.35 }
-    : { weight: 1, opacity: 0.25, fillOpacity: 0.06 }));
-  const miles = list.reduce((a, t) => a + (t.rods || 0), 0) / 320;
+  // numbered pins + click-to-select on the new parcels
+  list.forEach((t, i) => {
+    const poly = rec.layers.find(l => l._tractId === t.id);
+    if (!poly) return;
+    const pin = L.marker(poly.getBounds().getCenter(), {
+      icon: L.divIcon({ className: 'nv-pin', html: `<span>${i + 1}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }),
+      keyboard: false, riseOnHover: true
+    }).addTo(rec.map);
+    pin.on('click', e => { L.DomEvent.stop(e); selectNewTract(key, t.id, true); });
+    pin._tractId = t.id;
+    st.pins.push(pin);
+    const h = () => selectNewTract(key, t.id, true);
+    poly.on('click', h); st.handlers.push([poly, h]);
+  });
 
-  // opening title over the whole project
-  ui.querySelector('.fly-kicker').textContent = `New for ${REPORT_DATE}`;
-  ui.querySelector('.fly-headline').innerHTML =
-    `${list.length} tract${list.length > 1 ? 's' : ''} acquired · ${miles.toFixed(2)} mi<br><span style="font-size:.55em;font-weight:500;opacity:.8">${escapeHtml(p.name)}</span>`;
-  title.classList.add('show');
-  if (rec.bounds && rec.bounds.isValid()) await flyMove(key, rec.bounds, { padding: [40, 40], duration: 0.9 });
-  await flyWait(key, 1800);
-  title.classList.remove('show');
-  st.skip = false;
-
-  const bars = prog.querySelectorAll('i');
-  for (let i = 0; i < list.length; i++) {
-    if (st.cancel) break;
-    const t = list[i], poly = polyOf(t.id);
-    bars.forEach((b, j) => { b.className = j < i ? 'done' : ''; });
-    cap.classList.remove('show');
-    if (poly) {
-      await flyMove(key, poly.getBounds(), { padding: [90, 90], maxZoom: 16, duration: 1.6 });
-      if (st.cancel) break;
-      poly.setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillColor: statusColor(t.tract_status), fillOpacity: 0.65 });
-      poly.bringToFront();
-      if (poly._path) poly._path.classList.add('fly-pulse');
-    }
-    const owners = t.owners.length > 1 ? `${t.owners[0]} +${t.owners.length - 1}` : (t.owners[0] || '');
-    ui.querySelector('.fly-count').textContent = `${i + 1} of ${list.length} · newly acquired`;
-    ui.querySelector('.fly-owner').textContent = owners;
-    ui.querySelector('.fly-meta').textContent =
-      [t.id, t.subproject, t.county ? t.county + ' Co.' : '', t.rods > 0 ? (t.rods / 320).toFixed(2) + ' mi' : '',
-       `${(PREV_STATUS[t.id] || 'NEW').toLowerCase()} → acquired`].filter(Boolean).join(' · ');
-    cap.classList.add('show');
-    bars[i].style.setProperty('--seg', '2.3s');
-    bars[i].className = 'cur';
-    await flyWait(key, 2300);
-    st.skip = false;
-    if (poly) {
-      if (poly._path) poly._path.classList.remove('fly-pulse');
-      poly.setStyle({ color: statusColor(t.tract_status), weight: 2.5, opacity: 1, fillOpacity: 0.55 });
-    }
+  styleNewView(key);
+  const b = newBounds(key);
+  if (b) {
+    if (REDUCED) rec.map.fitBounds(b, Object.assign({ maxZoom: 15 }, nvPadding()));
+    else rec.map.flyToBounds(b, Object.assign({ maxZoom: 15, duration: 1.1 }, nvPadding()));
   }
-  if (st.cancel) return;
-
-  // finale: all new tracts together
-  bars.forEach(b => b.className = 'done');
-  cap.classList.remove('show');
-  const group = L.featureGroup(list.map(t => polyOf(t.id)).filter(Boolean));
-  await flyMove(key, group.getBounds(), { padding: [70, 70], maxZoom: 15, duration: 1.3 });
-  ui.querySelector('.fly-count').textContent = `New for ${REPORT_DATE}`;
-  ui.querySelector('.fly-owner').textContent = `${list.length} tracts · ${miles.toFixed(2)} mi acquired`;
-  ui.querySelector('.fly-meta').textContent = `since ${PREV_REPORT_DATE}`;
-  cap.classList.add('show');
-  await flyWait(key, 2500);
-  if (st.cancel) return;
-  flyoverCmd(key, 'close');
+  ui.querySelector('.nv-all').classList.add('active');
+  setTimeout(() => ui.querySelector('.nv-close').focus({ preventScroll: true }), 50);
 }
 
-function flyoverCmd(key, cmd){
+function newBounds(key){
+  const rec = MAPS[key], st = FLY[key];
+  const ids = new Set(st.list.map(t => t.id));
+  const g = L.featureGroup(rec.layers.filter(l => ids.has(l._tractId)));
+  return g.getLayers().length ? g.getBounds() : null;
+}
+
+function styleNewView(key, hoverId){
+  const rec = MAPS[key], st = FLY[key];
+  if (!rec || !st) return;
+  const ids = new Set(st.list.map(t => t.id));
+  rec.layers.forEach(poly => {
+    const id = poly._tractId;
+    if (id === st.selected) poly.setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillOpacity: 0.7 });
+    else if (id === hoverId) poly.setStyle({ color: '#ffffff', weight: 3, opacity: 1, fillOpacity: 0.6 });
+    else if (ids.has(id)) poly.setStyle({ color: statusColor('ACQUIRED'), weight: 2.5, opacity: 1, fillOpacity: st.selected ? 0.35 : 0.55 });
+    else poly.setStyle({ color: poly.options.fillColor, weight: 1, opacity: 0.3, fillOpacity: 0.07 });
+  });
+  const sel = rec.layers.find(l => l._tractId === st.selected);
+  if (sel) sel.bringToFront();
+  st.pins.forEach(pin => {
+    const el = pin.getElement();
+    if (el) el.classList.toggle('active', pin._tractId === st.selected || pin._tractId === hoverId);
+  });
+}
+
+function hoverNewTract(key, id, on){
+  if (!FLY[key]) return;
+  styleNewView(key, on ? id : null);
+}
+
+function selectNewTract(key, id, fromMap){
+  const rec = MAPS[key], st = FLY[key];
+  if (!rec || !st) return;
+  // list clicks toggle; map clicks (pin or parcel) always select
+  st.selected = id ? ((fromMap || st.selected !== id) ? id : null) : null;
+  const ui = document.getElementById('fly-' + key);
+  ui.querySelectorAll('.nv-item').forEach(li => li.classList.toggle('active', li.dataset.id === st.selected));
+  ui.querySelector('.nv-all').classList.toggle('active', !st.selected);
+  styleNewView(key);
+  const opts = nvPadding();
+  if (st.selected) {
+    const poly = rec.layers.find(l => l._tractId === st.selected);
+    if (poly) {
+      if (REDUCED) rec.map.fitBounds(poly.getBounds(), Object.assign({ maxZoom: 16 }, opts));
+      else rec.map.flyToBounds(poly.getBounds(), Object.assign({ maxZoom: 16, duration: 0.9 }, opts));
+    }
+    const li = ui.querySelector(`.nv-item[data-id="${CSS.escape(st.selected)}"]`);
+    if (li) li.scrollIntoView({ block: 'nearest', behavior: REDUCED ? 'auto' : 'smooth' });
+  } else {
+    const b = newBounds(key);
+    if (b) {
+      if (REDUCED) rec.map.fitBounds(b, Object.assign({ maxZoom: 15 }, opts));
+      else rec.map.flyToBounds(b, Object.assign({ maxZoom: 15, duration: 0.9 }, opts));
+    }
+  }
+}
+
+function closeNewView(key, quiet){
   const st = FLY[key];
   const stage = document.getElementById('stage-' + key);
-  if (cmd === 'pause' && st) {
-    st.paused = !st.paused;
-    stage.classList.toggle('paused', st.paused);
-    stage.querySelector('[data-act="pause"]').textContent = st.paused ? 'Play' : 'Pause';
-  } else if (cmd === 'next' && st) {
-    st.skip = true; st.paused = false;
-    stage.classList.remove('paused');
-    stage.querySelector('[data-act="pause"]').textContent = 'Pause';
-  } else if (cmd === 'close') {
-    if (st) st.cancel = true;
-    stage.classList.remove('flying', 'ended', 'paused');
-    document.body.classList.remove('flyover-open');
-    const rec = MAPS[key];
-    if (rec) {
-      rec.map.stop();
-      rec.layers.forEach(poly => { if (poly._path) poly._path.classList.remove('fly-pulse'); });
-      rec.map.invalidateSize();
-      applyStatusFilter(key);
-      if (st && st.scrollY != null) window.scrollTo({ top: st.scrollY, behavior: 'instant' });
-      // pan back out to the whole project, as it looks normally
+  if (stage) stage.classList.remove('flying');
+  document.body.classList.remove('flyover-open');
+  const rec = MAPS[key];
+  if (rec && st) {
+    rec.map.stop();
+    st.pins.forEach(pin => rec.map.removeLayer(pin));
+    st.handlers.forEach(([poly, h]) => poly.off('click', h));
+    rec.map.invalidateSize();
+    applyStatusFilter(key);
+    if (!quiet) {
+      if (st.scrollY != null) window.scrollTo({ top: st.scrollY, behavior: 'instant' });
       setTimeout(() => {
         if (rec.bounds && rec.bounds.isValid()) {
           if (REDUCED) rec.map.fitBounds(rec.bounds, { padding: [24, 24], animate: false });
-          else rec.map.flyToBounds(rec.bounds, { padding: [24, 24], duration: 1.2 });
+          else rec.map.flyToBounds(rec.bounds, { padding: [24, 24], duration: 1.0 });
         }
       }, 60);
     }
   }
+  delete FLY[key];
 }
+// kept so older links/buttons still work
+function flyoverCmd(key, cmd){ if (cmd === 'close') closeNewView(key); }
+
 document.addEventListener('keydown', e => {
+  if (document.getElementById('tractPopupOverlay')?.classList.contains('active')) return;
   const key = Object.keys(FLY).find(k => document.getElementById('stage-' + k)?.classList.contains('flying'));
   if (!key) return;
-  if (e.key === 'Escape') { e.stopPropagation(); flyoverCmd(key, 'close'); }
-  else if (e.key === ' ') { e.preventDefault(); flyoverCmd(key, 'pause'); }
-  else if (e.key === 'ArrowRight') flyoverCmd(key, 'next');
+  if (e.key === 'Escape') { e.stopPropagation(); closeNewView(key); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const ids = FLY[key].list.map(t => t.id);
+    let i = ids.indexOf(FLY[key].selected);
+    i = e.key === 'ArrowDown' ? Math.min(ids.length - 1, i + 1) : Math.max(0, (i < 0 ? 1 : i) - 1);
+    selectNewTract(key, ids[i]);
+  }
 }, true);
 
 const MAPS = {};
@@ -1425,7 +1445,7 @@ function initProjectMap(p){
     poly._tractId = t.id;
     poly._statusBucket = bucketForStatus(t.tract_status);
     poly.bindTooltip(`${t.owners[0]} · ${t.id}`, { sticky: true });
-    poly.on('click', () => showTractNote(p.prospect, t.id));
+    poly.on('click', () => { if (!FLY[p.key]) showTractNote(p.prospect, t.id); });
     layers.push(poly);
   });
 
