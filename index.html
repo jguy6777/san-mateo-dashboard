@@ -1187,13 +1187,15 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 async function flyWait(key, ms){
-  // waits ms of *playing* time; resolves early on skip/close
+  // waits ms of *playing* time (clock-based); resolves early on skip/close
   const st = FLY[key];
-  let left = ms;
+  let left = ms, last = performance.now();
   while (left > 0) {
     if (!st || st.cancel || st.skip) return;
-    await sleep(100);
-    if (!st.paused) left -= 100;
+    await sleep(80);
+    const now = performance.now();
+    if (!st.paused) left -= (now - last);
+    last = now;
   }
 }
 function flyMove(key, bounds, opts){
@@ -1209,6 +1211,10 @@ function flyMove(key, bounds, opts){
 }
 
 async function playFlyover(key){
+  try { await runFlyover(key); }
+  catch (err) { console.error('flyover', err); flyoverCmd(key, 'close'); }
+}
+async function runFlyover(key){
   const p = projects.find(pr => pr.key === key);
   if (!p) return;
   initProjectMap(p);
@@ -1247,8 +1253,8 @@ async function playFlyover(key){
   ui.querySelector('.fly-headline').innerHTML =
     `${list.length} tract${list.length > 1 ? 's' : ''} acquired · ${miles.toFixed(2)} mi<br><span style="font-size:.55em;font-weight:500;opacity:.8">${escapeHtml(p.name)}</span>`;
   title.classList.add('show');
-  if (rec.bounds && rec.bounds.isValid()) await flyMove(key, rec.bounds, { padding: [40, 40], duration: 1.2 });
-  await flyWait(key, 2600);
+  if (rec.bounds && rec.bounds.isValid()) await flyMove(key, rec.bounds, { padding: [40, 40], duration: 0.9 });
+  await flyWait(key, 1800);
   title.classList.remove('show');
   st.skip = false;
 
@@ -1259,7 +1265,7 @@ async function playFlyover(key){
     bars.forEach((b, j) => { b.className = j < i ? 'done' : ''; });
     cap.classList.remove('show');
     if (poly) {
-      await flyMove(key, poly.getBounds(), { padding: [90, 90], maxZoom: 16, duration: 2.4 });
+      await flyMove(key, poly.getBounds(), { padding: [90, 90], maxZoom: 16, duration: 1.6 });
       if (st.cancel) break;
       poly.setStyle({ color: '#ffffff', weight: 4, opacity: 1, fillColor: statusColor(t.tract_status), fillOpacity: 0.65 });
       poly.bringToFront();
@@ -1272,9 +1278,9 @@ async function playFlyover(key){
       [t.id, t.subproject, t.county ? t.county + ' Co.' : '', t.rods > 0 ? (t.rods / 320).toFixed(2) + ' mi' : '',
        `${(PREV_STATUS[t.id] || 'NEW').toLowerCase()} → acquired`].filter(Boolean).join(' · ');
     cap.classList.add('show');
-    bars[i].style.setProperty('--seg', '3.2s');
+    bars[i].style.setProperty('--seg', '2.3s');
     bars[i].className = 'cur';
-    await flyWait(key, 3200);
+    await flyWait(key, 2300);
     st.skip = false;
     if (poly) {
       if (poly._path) poly._path.classList.remove('fly-pulse');
@@ -1287,12 +1293,12 @@ async function playFlyover(key){
   bars.forEach(b => b.className = 'done');
   cap.classList.remove('show');
   const group = L.featureGroup(list.map(t => polyOf(t.id)).filter(Boolean));
-  await flyMove(key, group.getBounds(), { padding: [70, 70], maxZoom: 15, duration: 2 });
+  await flyMove(key, group.getBounds(), { padding: [70, 70], maxZoom: 15, duration: 1.3 });
   ui.querySelector('.fly-count').textContent = `New for ${REPORT_DATE}`;
   ui.querySelector('.fly-owner').textContent = `${list.length} tracts · ${miles.toFixed(2)} mi acquired`;
   ui.querySelector('.fly-meta').textContent = `since ${PREV_REPORT_DATE}`;
   cap.classList.add('show');
-  await flyWait(key, 3500);
+  await flyWait(key, 2500);
   if (st.cancel) return;
   flyoverCmd(key, 'close');
 }
