@@ -1154,7 +1154,6 @@ function parcelMapCard(p){
         <div class="fly-controls">
           <button type="button" class="fly-btn" data-act="pause" onclick="flyoverCmd('${p.key}','pause')">Pause</button>
           <button type="button" class="fly-btn" data-act="next" onclick="flyoverCmd('${p.key}','next')">Skip ›</button>
-          <button type="button" class="fly-btn" data-act="replay" onclick="playFlyover('${p.key}')">Replay</button>
           <button type="button" class="fly-btn" data-act="close" onclick="flyoverCmd('${p.key}','close')" aria-label="Close flyover">✕</button>
         </div>
       </div>
@@ -1218,7 +1217,8 @@ async function playFlyover(key){
   if (FLY[key]) FLY[key].cancel = true;
   const list = newlyAcquired(p);
   if (!list.length) return;
-  const st = FLY[key] = { cancel:false, paused:false, skip:false };
+  const st = FLY[key] = { cancel:false, paused:false, skip:false,
+                          scrollY: (FLY[key] && FLY[key].scrollY != null && document.body.classList.contains('flyover-open')) ? FLY[key].scrollY : window.scrollY };
 
   STATUS_FILTER[key] = null; applyStatusFilter(key);
   const stage = document.getElementById('stage-' + key);
@@ -1292,7 +1292,9 @@ async function playFlyover(key){
   ui.querySelector('.fly-owner').textContent = `${list.length} tracts · ${miles.toFixed(2)} mi acquired`;
   ui.querySelector('.fly-meta').textContent = `since ${PREV_REPORT_DATE}`;
   cap.classList.add('show');
-  stage.classList.add('ended');
+  await flyWait(key, 3500);
+  if (st.cancel) return;
+  flyoverCmd(key, 'close');
 }
 
 function flyoverCmd(key, cmd){
@@ -1316,11 +1318,14 @@ function flyoverCmd(key, cmd){
       rec.layers.forEach(poly => { if (poly._path) poly._path.classList.remove('fly-pulse'); });
       rec.map.invalidateSize();
       applyStatusFilter(key);
-      // leave the view on this week's new tracts
-      const p = projects.find(pr => pr.key === key);
-      const ids = new Set(newlyAcquired(p).map(t => t.id));
-      const g = L.featureGroup(rec.layers.filter(l => ids.has(l._tractId)));
-      if (g.getLayers().length) rec.map.fitBounds(g.getBounds(), { padding: [30, 30], maxZoom: 15 });
+      if (st && st.scrollY != null) window.scrollTo({ top: st.scrollY, behavior: 'instant' });
+      // pan back out to the whole project, as it looks normally
+      setTimeout(() => {
+        if (rec.bounds && rec.bounds.isValid()) {
+          if (REDUCED) rec.map.fitBounds(rec.bounds, { padding: [24, 24], animate: false });
+          else rec.map.flyToBounds(rec.bounds, { padding: [24, 24], duration: 1.2 });
+        }
+      }, 60);
     }
   }
 }
