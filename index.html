@@ -41,6 +41,10 @@
     --overlay: rgba(6,10,18,0.6);
     --map-attr-bg: rgba(23,35,61,0.75);
     --card-shadow: none;
+    --st-acquired: var(--green);
+    --st-working: var(--blue);
+    --st-open: var(--grey-bar);
+    --st-refusal: var(--refusal);
     color-scheme: dark;
   }
   :root[data-theme="light"]{
@@ -71,6 +75,10 @@
     --overlay: rgba(47,47,31,0.35);
     --map-attr-bg: rgba(251,248,241,0.88);
     --card-shadow: 0 1px 2px rgba(74,62,30,0.06), 0 4px 14px rgba(74,62,30,0.07);
+    --st-acquired: #1fbf4a;
+    --st-working: #00a6d6;
+    --st-open: #4a5361;
+    --st-refusal: #e0242f;
     color-scheme: light;
   }
   body, .card, .tabs, header.top{ transition: background-color .25s, color .25s, border-color .25s; }
@@ -1063,10 +1071,10 @@ function snapshotCard(p){
   const buckets = statusBreakdown(p);
   const total = Object.values(buckets).reduce((a,c) => a+c, 0) || 1;
   const segments = [
-    { label: 'Acquired', val: buckets.Acquired, color: 'var(--green)' },
-    { label: 'Working', val: buckets.Working, color: 'var(--blue)' },
-    { label: 'Open', val: buckets.Open, color: 'var(--grey-bar)' },
-    { label: 'Refusal', val: buckets.Refusal, color: 'var(--refusal)' }
+    { label: 'Acquired', val: buckets.Acquired, color: 'var(--st-acquired)' },
+    { label: 'Working', val: buckets.Working, color: 'var(--st-working)' },
+    { label: 'Open', val: buckets.Open, color: 'var(--st-open)' },
+    { label: 'Refusal', val: buckets.Refusal, color: 'var(--st-refusal)' }
   ].filter(s => s.val > 0);
 
 
@@ -1126,10 +1134,10 @@ function parcelMapCard(p){
   const withGeo = rows.filter(t => PARCELS[t.id]);
   const buckets = statusBreakdown(p);
   const legendItems = [
-    { key: 'Acquired', label: 'Acquired', varName: '--green' },
-    { key: 'Working', label: 'Working', varName: '--blue' },
-    { key: 'Open', label: 'Open', varName: '--grey-bar' },
-    { key: 'Refusal', label: 'Refusal', varName: '--refusal' }
+    { key: 'Acquired', label: 'Acquired', varName: '--st-acquired' },
+    { key: 'Working', label: 'Working', varName: '--st-working' },
+    { key: 'Open', label: 'Open', varName: '--st-open' },
+    { key: 'Refusal', label: 'Refusal', varName: '--st-refusal' }
   ].filter(l => buckets[l.key] > 0);
   const allBtn = `<button type="button" class="map-legend-item all-btn" data-status-key="" onclick="toggleStatusFilter('${p.key}','')">All</button>`;
   const legend = legendItems.map(l => `<button type="button" class="map-legend-item" data-status-key="${l.key}" onclick="toggleStatusFilter('${p.key}','${l.key}')"><i style="background:var(${l.varName})"></i>${l.label}</button>`).join('');
@@ -1373,10 +1381,10 @@ document.addEventListener('DOMContentLoaded', syncThemeLabel);
 function statusColor(status){
   const s = status || '';
   const css = getComputedStyle(document.documentElement);
-  if (s.indexOf('ACQUIRED') > -1) return css.getPropertyValue('--green').trim();
-  if (s === 'REFUSAL') return css.getPropertyValue('--refusal').trim();
-  if (s.indexOf('WORKING') > -1) return css.getPropertyValue('--blue').trim();
-  return css.getPropertyValue('--grey-bar').trim();
+  if (s.indexOf('ACQUIRED') > -1) return css.getPropertyValue('--st-acquired').trim();
+  if (s === 'REFUSAL') return css.getPropertyValue('--st-refusal').trim();
+  if (s.indexOf('WORKING') > -1) return css.getPropertyValue('--st-working').trim();
+  return css.getPropertyValue('--st-open').trim();
 }
 
 function findProjectByProspect(prospect){
