@@ -1,0 +1,7 @@
+# Weekly source files (Mapper/Status Report exports, notes, KMZs) stay local; only index.html is published
+*.xlsx
+*.xls
+*.csv
+*.kmz
+*.kml
+~$*
