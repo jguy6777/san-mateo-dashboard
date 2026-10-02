@@ -694,6 +694,36 @@
     .nv-panel{ top:auto; left: 10px; right: 10px; bottom: 10px; width:auto; max-height: 45vh; }
   }
 
+  /* ---------- map tract search ---------- */
+  .map-search{
+    position:absolute; top: 10px; right: 10px; z-index: 850; width: min(300px, calc(100% - 70px));
+    display:flex; align-items:center; gap: 6px; padding: 0 10px; height: 36px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 9px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25); color: var(--ink-faint);
+  }
+  .map-search:focus-within{ border-color: var(--green-soft); box-shadow: 0 0 0 3px var(--green-glow), 0 2px 10px rgba(0,0,0,.25); }
+  .map-search svg{ width: 15px; height: 15px; flex:none; }
+  .map-search input{
+    flex:1; min-width:0; height:100%; border:0; outline:0; background:transparent; color: var(--ink);
+    font-family: var(--font-sans); font-size: 13px;
+  }
+  .map-search input::placeholder{ color: var(--ink-faint); }
+  .map-search-list{
+    display:none; position:absolute; top: calc(100% + 6px); left: 0; right: 0; margin:0; padding: 4px;
+    list-style:none; max-height: 320px; overflow-y:auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  }
+  .map-search.open .map-search-list{ display:block; }
+  .map-search-list li{ display:grid; grid-template-columns: 10px 1fr; gap: 8px; align-items:center; padding: 7px 8px; border-radius: 6px; cursor:pointer; }
+  .map-search-list li[aria-selected="true"], .map-search-list li:hover{ background: var(--panel-2); }
+  .map-search-list i{ width: 10px; height: 10px; border-radius: 3px; }
+  .ms-id{ font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+  .ms-owner{ font-size: 12px; color: var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ms-owner mark, .ms-id mark{ background: var(--green-glow); color: inherit; border-radius: 2px; }
+  .map-search-list .ms-empty{ display:block; color: var(--ink-faint); font-size: 12px; cursor:default; }
+  .map-search-list .ms-empty:hover{ background:none; }
+  .map-stage.flying .map-search{ display:none; }
+
   /* Leaflet dark-theme touches */
   .leaflet-container{ background: var(--panel-2); font-family: var(--font-sans); }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip{ background: var(--panel); color: var(--ink); }
@@ -1160,6 +1190,14 @@ function parcelMapCard(p){
     </div>
     <div class="map-stage" id="stage-${p.key}">
       <div id="map-${p.key}" class="parcel-map"></div>
+      <div class="map-search" id="msearch-${p.key}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input type="search" placeholder="Search tract or owner…" autocomplete="off" spellcheck="false"
+          role="combobox" aria-expanded="false" aria-controls="msearch-list-${p.key}" aria-label="Search tracts on map"
+          oninput="mapSearchInput('${p.key}')" onkeydown="mapSearchKey(event,'${p.key}')" onfocus="mapSearchInput('${p.key}')"
+          onblur="setTimeout(() => { if (document.activeElement !== this) mapSearchClose('${p.key}'); }, 150)">
+        <ul class="map-search-list" id="msearch-list-${p.key}" role="listbox"></ul>
+      </div>
       <div class="fly-ui" id="fly-${p.key}">
         <aside class="nv-panel" aria-label="Newly acquired tracts">
           <div class="nv-head">
@@ -1611,6 +1649,85 @@ function highlightParcel(prospect, tractId){
   poly.openTooltip();
   OPEN_TOOLTIP[p.key] = poly;
   setTimeout(() => poly.setStyle(layerStyle(p.key, poly)), 1800);
+}
+
+/* ---------- map tract search ---------- */
+const MSEARCH = {};
+function msNorm(x){ return (x || '').toString().toLowerCase(); }
+function msMark(text, q){
+  const t = escapeHtml(text || '');
+  if (!q) return t;
+  const i = msNorm(text).indexOf(q);
+  if (i < 0) return t;
+  return escapeHtml(text.slice(0, i)) + '<mark>' + escapeHtml(text.slice(i, i + q.length)) + '</mark>' + escapeHtml(text.slice(i + q.length));
+}
+function mapSearchInput(key){
+  const p = projects.find(pr => pr.key === key);
+  const box = document.getElementById('msearch-' + key);
+  const input = box.querySelector('input'), ul = box.querySelector('ul');
+  const q = msNorm(input.value.trim());
+  if (!q) { mapSearchClose(key); return; }
+  const rows = (TRACTS[p.prospect] || []).filter(t => PARCELS[t.id]);
+  const scored = [];
+  rows.forEach(t => {
+    const id = msNorm(t.id);
+    const owner = t.owners.find(o => msNorm(o).includes(q));
+    let score = -1;
+    if (id.startsWith(q)) score = 0;
+    else if (id.includes(q)) score = 1;
+    else if (owner) score = 2;
+    else if (msNorm(t.subproject).includes(q) || msNorm(t.tract_status).includes(q)) score = 3;
+    if (score >= 0) scored.push({ t, score, owner: owner || t.owners[0] || '' });
+  });
+  scored.sort((a, b) => a.score - b.score || a.t.id.localeCompare(b.t.id, undefined, { numeric: true }));
+  const hits = scored.slice(0, 12);
+  MSEARCH[key] = { hits: hits.map(h => h.t.id), idx: hits.length ? 0 : -1 };
+  ul.innerHTML = hits.length ? hits.map((h, i) => {
+    const more = h.t.owners.length > 1 ? ` +${h.t.owners.length - 1}` : '';
+    return `<li role="option" id="ms-${key}-${i}" aria-selected="${i === 0}" onmousedown="event.preventDefault(); mapSearchPick('${key}', ${i})">
+      <i style="background:${statusColor(h.t.tract_status)}"></i>
+      <div><div class="ms-id">${msMark(h.t.id, q)} <span style="color:var(--ink-faint)">· ${escapeHtml(h.t.tract_status || 'OPEN').toLowerCase()}</span></div>
+      <div class="ms-owner">${msMark(h.owner, q)}${more}</div></div></li>`;
+  }).join('') : `<li class="ms-empty">No tracts match “${escapeHtml(input.value.trim())}”</li>`;
+  box.classList.add('open');
+  input.setAttribute('aria-expanded', 'true');
+}
+function mapSearchKey(e, key){
+  const st = MSEARCH[key];
+  const box = document.getElementById('msearch-' + key);
+  if (e.key === 'Escape') { e.stopPropagation(); box.querySelector('input').value = ''; mapSearchClose(key); return; }
+  if (!st || !st.hits.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    st.idx = (st.idx + (e.key === 'ArrowDown' ? 1 : -1) + st.hits.length) % st.hits.length;
+    box.querySelectorAll('li[role=option]').forEach((li, i) => li.setAttribute('aria-selected', i === st.idx));
+    const li = document.getElementById(`ms-${key}-${st.idx}`);
+    if (li) li.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    mapSearchPick(key, Math.max(st.idx, 0));
+  }
+}
+function mapSearchPick(key, i){
+  const st = MSEARCH[key];
+  if (!st || !st.hits[i]) return;
+  const id = st.hits[i];
+  const p = projects.find(pr => pr.key === key);
+  const box = document.getElementById('msearch-' + key);
+  box.querySelector('input').value = id;
+  mapSearchClose(key);
+  // if a status filter would hide this tract, clear it so it's visible
+  const t = (TRACTS[p.prospect] || []).find(x => x.id === id);
+  if (STATUS_FILTER[key] && t && bucketForStatus(t.tract_status) !== STATUS_FILTER[key]) {
+    STATUS_FILTER[key] = null; applyStatusFilter(key);
+  }
+  highlightParcel(p.prospect, id);
+}
+function mapSearchClose(key){
+  const box = document.getElementById('msearch-' + key);
+  if (!box) return;
+  box.classList.remove('open');
+  box.querySelector('input').setAttribute('aria-expanded', 'false');
 }
 
 function viewOnMap(prospect, tractId){
