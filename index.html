@@ -740,6 +740,15 @@
   .leaflet-tooltip-top:before{ border-top-color: var(--line); }
 
   /* ---------- Line List tab ---------- */
+  .subtabs{ display:inline-flex; gap:4px; padding:4px; margin-bottom: 18px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; }
+  .subtabs button{ font-family: var(--font-sans); font-size: 13px; font-weight:500; cursor:pointer;
+    background:none; border:1px solid transparent; color: var(--ink-dim); border-radius: 7px; padding: 7px 16px; }
+  .subtabs button:hover{ color: var(--ink); }
+  .subtabs button.active{ background: var(--panel); border-color: var(--green-soft); color: var(--green); }
+  .subtabs button .n{ font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); margin-left: 6px; }
+  .subview{ display:none; }
+  .subview.active{ display:block; animation: fade .2s ease; }
   .ll-bar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 16px; }
   .ll-bar select{
     background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
@@ -807,7 +816,6 @@
 
   <div id="projects"></div>
 
-  <div class="project" id="proj-linelist"></div>
 
   <div class="tract-popup-overlay" id="tractPopupOverlay" onclick="if(event.target===this) closeTractNote()">
     <div class="tract-popup" id="tractPopup"></div>
@@ -1772,6 +1780,7 @@ function viewOnMap(prospect, tractId){
   const p = findProjectByProspect(prospect);
   if (!p) return;
   if (!document.getElementById('proj-' + p.key).classList.contains('active')) selectTab(p.key);
+  showSubview(p.key, 'dash');
   const el = document.getElementById('map-' + p.key);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   setTimeout(() => highlightParcel(prospect, tractId), 350);
@@ -1995,10 +2004,9 @@ projects.forEach((p, i) => {
 
 buildOverview();
 
-/* ---------- Line List tab: every tract across all projects, filterable, exportable to Excel ---------- */
+/* ---------- Line List: one per project (Dashboard | Line List toggle), filterable, exportable to Excel ---------- */
 const LL_COLS = [
-  { key:'project',  label:'Project' },
-  { key:'sub',      label:'Sub-Project' },
+  { key:'sub',      label:'Sub-Project', subOnly:true },
   { key:'id',       label:'Tract ID' },
   { key:'owner',    label:'Landowner' },
   { key:'county',   label:'County' },
@@ -2007,9 +2015,9 @@ const LL_COLS = [
   { key:'survey',   label:'Survey Packet' },
   { key:'title',    label:'Title' },
   { key:'status',   label:'Tract Status' },
-  { key:'noteDate', label:'Last Note', num:false }
+  { key:'noteDate', label:'Last Note' }
 ];
-const LL = { sort:{ key:'project', dir:'asc' } };
+const LL = {};
 
 function llUnescape(s){
   const d = document.createElement('textarea'); d.innerHTML = s || ''; return d.value;
@@ -2019,88 +2027,83 @@ function llParseNoteDate(n){
   const d = new Date(n.date + (n.time ? ' ' + n.time : ''));
   return isNaN(d) ? new Date(n.date) : d;
 }
-function llRows(){
-  const out = [];
-  projects.forEach((p, pi) => {
-    (TRACTS[p.prospect] || []).forEach((t, ti) => {
-      const ownerSet = new Set(t.owners.map(o => o.toUpperCase()));
-      const note = (NOTES[t.id] || []).find(n => !n.owner || ownerSet.has(n.owner.toUpperCase()));
-      out.push({
-        p, order: pi * 10000 + ti,
-        project: p.name, sub: t.subproject || '', id: t.id,
-        owners: t.owners, owner: t.owners.join('; '),
-        county: t.county || '', state: t.state || '',
-        segment: /MAINLINE/.test(t.ami || '') ? 'Mainline' : 'Buffer', ami: t.ami || '',
-        rods: t.rods || 0, miles: (t.rods || 0) / 320,
-        survey: t.survey_packet || '', title: t.title || '',
-        status: t.tract_status || '', group: bucketForStatus(t.tract_status),
-        prevStatus: (typeof PREV_STATUS !== 'undefined' && PREV_STATUS[t.id]) || '',
-        note, noteDate: llParseNoteDate(note)
-      });
-    });
+function llRowsFor(p){
+  return (TRACTS[p.prospect] || []).map((t, ti) => {
+    const ownerSet = new Set(t.owners.map(o => o.toUpperCase()));
+    const note = (NOTES[t.id] || []).find(n => !n.owner || ownerSet.has(n.owner.toUpperCase()));
+    return {
+      p, order: ti, sub: t.subproject || '', id: t.id,
+      owners: t.owners, owner: t.owners.join('; '),
+      county: t.county || '', state: t.state || '',
+      segment: /MAINLINE/.test(t.ami || '') ? 'Mainline' : 'Buffer', ami: t.ami || '',
+      rods: t.rods || 0, miles: (t.rods || 0) / 320,
+      survey: t.survey_packet || '', title: t.title || '',
+      status: t.tract_status || '', group: bucketForStatus(t.tract_status),
+      prevStatus: (typeof PREV_STATUS !== 'undefined' && PREV_STATUS[t.id]) || '',
+      note, noteDate: llParseNoteDate(note)
+    };
   });
-  return out;
 }
-const LL_ALL = llRows();
 
-function llOptions(field, label){
-  const vals = [...new Set(LL_ALL.map(r => r[field]).filter(Boolean))].sort();
-  return `<select data-ll-filter="${field}" onchange="llRender()" aria-label="${label}">
+function llOptions(key, field, label){
+  const vals = [...new Set(LL[key].all.map(r => r[field]).filter(Boolean))].sort();
+  if (vals.length < 2) return '';
+  return `<select data-ll-filter="${field}" onchange="llRender('${key}')" aria-label="${label}">
     <option value="">${label}: All</option>
     ${vals.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}
   </select>`;
 }
 
-function buildLineList(){
-  const el = document.getElementById('proj-linelist');
-  const headCells = LL_COLS.map(c => `<th class="sortable${c.num ? ' num' : ''}" onclick="llSort('${c.key}')">${c.label}<span class="sort-arrow" data-ll-arrow="${c.key}"></span></th>`).join('');
-  el.innerHTML = `<div class="card wide">
+function lineListHtml(p){
+  const key = p.key, st = LL[key];
+  const cols = LL_COLS.filter(c => !c.subOnly || st.hasSub);
+  const headCells = cols.map(c => `<th class="sortable${c.num ? ' num' : ''}" onclick="llSort('${key}','${c.key}')">${c.label}<span class="sort-arrow" data-ll-arrow="${c.key}"></span></th>`).join('');
+  return `<div class="card wide" id="ll-${key}">
     <div class="card-head">
       <div>
         <h2>Line List</h2>
-        <div class="sub">Every tract across all ${projects.length} projects · report date ${escapeHtml(REPORT_DATE)} · click a row for details</div>
+        <div class="sub">${escapeHtml(p.name)} · report date ${escapeHtml(REPORT_DATE)} · click a row for details</div>
       </div>
     </div>
     <div class="ll-bar">
-      <input type="text" class="search" id="llSearch" placeholder="Search tract, owner, county…" oninput="llRender()">
-      ${llOptions('project', 'Project')}
-      ${llOptions('group', 'Status group')}
-      ${llOptions('status', 'Tract status')}
-      ${llOptions('survey', 'Survey packet')}
-      ${llOptions('title', 'Title')}
-      <button type="button" class="ll-btn" onclick="llReset()">Clear</button>
+      <input type="text" class="search" data-ll-search placeholder="Search tract, owner, county…" oninput="llRender('${key}')">
+      ${st.hasSub ? llOptions(key, 'sub', 'Sub-project') : ''}
+      ${llOptions(key, 'group', 'Status group')}
+      ${llOptions(key, 'status', 'Tract status')}
+      ${llOptions(key, 'survey', 'Survey packet')}
+      ${llOptions(key, 'title', 'Title')}
+      <button type="button" class="ll-btn" onclick="llReset('${key}')">Clear</button>
       <span class="ll-spacer"></span>
-      <span class="ll-count" id="llCount"></span>
-      <button type="button" class="ll-btn primary" id="llExport" onclick="llExport()">
+      <span class="ll-count" data-ll-count></span>
+      <button type="button" class="ll-btn primary" data-ll-export onclick="llExport('${key}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>
-        Export to Excel
+        <span>Export to Excel</span>
       </button>
     </div>
     <div class="table-scroll">
-      <table class="rows detail ll-table" id="llTable">
+      <table class="rows detail ll-table">
         <thead><tr>${headCells}</tr></thead>
         <tbody></tbody>
       </table>
-      <div class="ll-empty" id="llEmpty" hidden>No tracts match these filters.</div>
+      <div class="ll-empty" hidden>No tracts match these filters.</div>
     </div>
   </div>`;
-  llRender();
 }
 
-function llFiltered(){
-  const q = (document.getElementById('llSearch')?.value || '').trim().toLowerCase();
+function llFiltered(key){
+  const root = document.getElementById('ll-' + key), st = LL[key];
+  const q = (root.querySelector('[data-ll-search]').value || '').trim().toLowerCase();
   const f = {};
-  document.querySelectorAll('[data-ll-filter]').forEach(s => { s.classList.toggle('on', !!s.value); if (s.value) f[s.dataset.llFilter] = s.value; });
-  let rows = LL_ALL.filter(r => {
+  root.querySelectorAll('[data-ll-filter]').forEach(s => { s.classList.toggle('on', !!s.value); if (s.value) f[s.dataset.llFilter] = s.value; });
+  let rows = st.all.filter(r => {
     for (const k in f) if (r[k] !== f[k]) return false;
     if (!q) return true;
-    return [r.project, r.sub, r.id, r.owner, r.county, r.status, r.survey, r.title].join(' ').toLowerCase().includes(q);
+    return [r.sub, r.id, r.owner, r.county, r.status, r.survey, r.title].join(' ').toLowerCase().includes(q);
   });
-  const { key, dir } = LL.sort, m = dir === 'asc' ? 1 : -1;
-  rows = rows.slice().sort((a, b) => {
-    if (key === 'project') return (a.order - b.order) * m;
-    let av = a[key], bv = b[key];
-    if (key === 'noteDate') { av = av ? av.getTime() : -Infinity; bv = bv ? bv.getTime() : -Infinity; }
+  const { key: sk, dir } = st.sort, m = dir === 'asc' ? 1 : -1;
+  if (sk) rows = rows.slice().sort((a, b) => {
+    let av = a[sk], bv = b[sk];
+    if (sk === 'noteDate') { av = av ? av.getTime() : -Infinity; bv = bv ? bv.getTime() : -Infinity; }
     else if (typeof av === 'string') { av = av.toLowerCase(); bv = (bv || '').toLowerCase(); }
     if (av < bv) return -m; if (av > bv) return m;
     return a.order - b.order;
@@ -2108,12 +2111,11 @@ function llFiltered(){
   return rows;
 }
 
-function llRender(){
-  const rows = llFiltered();
-  const tb = document.querySelector('#llTable tbody');
-  tb.innerHTML = rows.map(r => `<tr data-prospect="${escapeHtml(r.p.prospect)}" data-tract-id="${escapeHtml(r.id)}" onclick="showTractNote(this.dataset.prospect, this.dataset.tractId)">
-    <td>${escapeHtml(r.project)}</td>
-    <td>${escapeHtml(r.sub || '—')}</td>
+function llRender(key){
+  const root = document.getElementById('ll-' + key), st = LL[key];
+  const rows = llFiltered(key);
+  root.querySelector('tbody').innerHTML = rows.map(r => `<tr data-prospect="${escapeHtml(r.p.prospect)}" data-tract-id="${escapeHtml(r.id)}" onclick="showTractNote(this.dataset.prospect, this.dataset.tractId)">
+    ${st.hasSub ? `<td>${escapeHtml(r.sub || '—')}</td>` : ''}
     <td class="mono">${escapeHtml(r.id)}</td>
     <td>${escapeHtml(r.owners[0] || '—')}${r.owners.length > 1 ? ` <span class="more">+${r.owners.length - 1} more</span>` : ''}</td>
     <td>${escapeHtml(r.county)}, ${escapeHtml(r.state)}</td>
@@ -2124,22 +2126,24 @@ function llRender(){
     <td>${badge(r.status)}</td>
     <td class="ll-note">${r.note ? `<span class="mono">${escapeHtml(r.note.date)}${r.note.by ? ' · ' + escapeHtml(r.note.by) : ''}</span><span class="ll-note-text" title="${escapeHtml(llUnescape(r.note.text))}">${r.note.text}</span>` : '<span class="more">—</span>'}</td>
   </tr>`).join('');
-  document.getElementById('llEmpty').hidden = rows.length > 0;
+  root.querySelector('.ll-empty').hidden = rows.length > 0;
   const mi = rows.reduce((a, r) => a + r.miles, 0);
-  document.getElementById('llCount').textContent = `${rows.length} of ${LL_ALL.length} tracts · ${mi.toFixed(2)} mi`;
-  document.querySelectorAll('[data-ll-arrow]').forEach(a => {
-    a.textContent = a.dataset.llArrow === LL.sort.key ? (LL.sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+  root.querySelector('[data-ll-count]').textContent = `${rows.length} of ${st.all.length} tracts · ${mi.toFixed(2)} mi`;
+  root.querySelectorAll('[data-ll-arrow]').forEach(a => {
+    a.textContent = a.dataset.llArrow === st.sort.key ? (st.sort.dir === 'asc' ? ' ▲' : ' ▼') : '';
   });
 }
 
-function llSort(key){
-  LL.sort = { key, dir: (LL.sort.key === key && LL.sort.dir === 'asc') ? 'desc' : 'asc' };
-  llRender();
+function llSort(key, field){
+  const s = LL[key].sort;
+  LL[key].sort = { key: field, dir: (s.key === field && s.dir === 'asc') ? 'desc' : 'asc' };
+  llRender(key);
 }
-function llReset(){
-  document.getElementById('llSearch').value = '';
-  document.querySelectorAll('[data-ll-filter]').forEach(s => s.value = '');
-  llRender();
+function llReset(key){
+  const root = document.getElementById('ll-' + key);
+  root.querySelector('[data-ll-search]').value = '';
+  root.querySelectorAll('[data-ll-filter]').forEach(s => s.value = '');
+  llRender(key);
 }
 
 let llExcelJs = null;
@@ -2156,33 +2160,45 @@ function llLoadExcelJs(){
   return llExcelJs;
 }
 
-async function llExport(){
-  const btn = document.getElementById('llExport');
-  const label = btn.innerHTML;
-  btn.disabled = true; btn.lastChild.textContent = ' Building…';
+async function llExport(key){
+  const root = document.getElementById('ll-' + key), st = LL[key];
+  const p = projects.find(x => x.key === key);
+  const btn = root.querySelector('[data-ll-export]'), lbl = btn.querySelector('span');
+  btn.disabled = true; lbl.textContent = 'Building…';
   try {
     const ExcelJS = await llLoadExcelJs();
-    const rows = llFiltered();
+    const rows = llFiltered(key);
     const wb = new ExcelJS.Workbook();
     wb.creator = 'Schoeffler Energy Group'; wb.created = new Date();
     const ws = wb.addWorksheet('Line List', { views:[{ state:'frozen', ySplit:4 }] });
 
     const cols = [
-      { name:'Project', w:38 }, { name:'Sub-Project', w:28 }, { name:'Tract ID', w:18 },
-      { name:'Landowner(s)', w:44 }, { name:'Owner Count', w:12, fmt:'0' },
-      { name:'County', w:14 }, { name:'State', w:8 }, { name:'AMI', w:30 }, { name:'Segment', w:11 },
-      { name:'Length (Rods)', w:14, fmt:'#,##0.00' }, { name:'Length (Miles)', w:14, fmt:'0.00' },
-      { name:'Survey Packet', w:16 }, { name:'Title', w:22 }, { name:'Tract Status', w:34 },
-      { name:'Status Group', w:14 }, { name:'Prior Week Status', w:34 },
-      { name:'Last Note Date', w:15, fmt:'mm/dd/yyyy' }, { name:'Last Note By', w:20 }, { name:'Last Note', w:80, wrap:true }
+      ...(st.hasSub ? [{ name:'Sub-Project', w:28, get:r => r.sub || null }] : []),
+      { name:'Tract ID', w:18, get:r => r.id },
+      { name:'Landowner(s)', w:44, get:r => r.owner },
+      { name:'Owner Count', w:12, fmt:'0', get:r => r.owners.length },
+      { name:'County', w:14, get:r => r.county },
+      { name:'State', w:8, get:r => r.state },
+      { name:'AMI', w:30, get:r => r.ami },
+      { name:'Segment', w:11, get:r => r.segment },
+      { name:'Length (Rods)', w:14, fmt:'#,##0.00', get:r => Math.round(r.rods * 100) / 100 },
+      { name:'Length (Miles)', w:14, fmt:'0.00', get:r => Math.round(r.miles * 10000) / 10000 },
+      { name:'Survey Packet', w:16, get:r => r.survey || null },
+      { name:'Title', w:22, get:r => r.title || null },
+      { name:'Tract Status', w:34, get:r => r.status || null },
+      { name:'Status Group', w:14, get:r => r.group },
+      { name:'Prior Week Status', w:34, get:r => r.prevStatus || null },
+      { name:'Last Note Date', w:15, fmt:'mm/dd/yyyy', get:r => r.noteDate ? new Date(Date.UTC(r.noteDate.getFullYear(), r.noteDate.getMonth(), r.noteDate.getDate())) : null },
+      { name:'Last Note By', w:20, get:r => r.note ? r.note.by || null : null },
+      { name:'Last Note', w:80, wrap:true, get:r => r.note ? llUnescape(r.note.text) : null }
     ];
 
     const filt = [];
-    const q = document.getElementById('llSearch').value.trim();
+    const q = root.querySelector('[data-ll-search]').value.trim();
     if (q) filt.push(`search "${q}"`);
-    document.querySelectorAll('[data-ll-filter]').forEach(s => { if (s.value) filt.push(`${s.options[0].text.replace(': All','')} = ${s.value}`); });
+    root.querySelectorAll('[data-ll-filter]').forEach(s => { if (s.value) filt.push(`${s.options[0].text.replace(': All','')} = ${s.value}`); });
 
-    ws.getCell('A1').value = 'San Mateo Midstream — Line List';
+    ws.getCell('A1').value = `${p.name} — Line List`;
     ws.getCell('A1').font = { bold:true, size:14 };
     ws.getCell('A2').value = `Report date ${REPORT_DATE} · ${rows.length} tracts · ${rows.reduce((a,r)=>a+r.miles,0).toFixed(2)} mi` + (filt.length ? ` · Filtered: ${filt.join('; ')}` : ' · All tracts');
     ws.getCell('A2').font = { italic:true, color:{ argb:'FF595959' } };
@@ -2191,14 +2207,7 @@ async function llExport(){
       name: 'LineList', ref: 'A4', headerRow: true, totalsRow: false,
       style: { theme: 'TableStyleMedium7', showRowStripes: true },
       columns: cols.map(c => ({ name: c.name, filterButton: true })),
-      rows: rows.length ? rows.map(r => [
-        r.project, r.sub || null, r.id, r.owner, r.owners.length,
-        r.county, r.state, r.ami, r.segment,
-        Math.round(r.rods * 100) / 100, Math.round(r.miles * 10000) / 10000,
-        r.survey || null, r.title || null, r.status || null, r.group, r.prevStatus || null,
-        r.noteDate ? new Date(Date.UTC(r.noteDate.getFullYear(), r.noteDate.getMonth(), r.noteDate.getDate())) : null,
-        r.note ? r.note.by || null : null, r.note ? llUnescape(r.note.text) : null
-      ]) : [cols.map(() => null)]
+      rows: rows.length ? rows.map(r => cols.map(c => c.get(r))) : [cols.map(() => null)]
     });
 
     cols.forEach((c, i) => {
@@ -2215,22 +2224,42 @@ async function llExport(){
     const a = document.createElement('a');
     const stamp = new Date(REPORT_DATE); const ymd = isNaN(stamp) ? 'export' : stamp.toISOString().slice(0,10);
     a.href = URL.createObjectURL(blob);
-    a.download = `San Mateo Line List ${ymd}.xlsx`;
+    a.download = `${p.name} Line List ${ymd}.xlsx`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   } catch (e) {
     alert('Export failed: ' + e.message);
   } finally {
-    btn.disabled = false; btn.innerHTML = label;
+    btn.disabled = false; lbl.textContent = 'Export to Excel';
   }
 }
 
-const lineListBtn = document.createElement('button');
-lineListBtn.dataset.key = 'linelist';
-lineListBtn.innerHTML = `Line List<span class="n">${LL_ALL.length} tracts</span>`;
-lineListBtn.addEventListener('click', () => selectTab('linelist'));
-tabsEl.appendChild(lineListBtn);
-buildLineList();
+function showSubview(key, view){
+  const div = document.getElementById('proj-' + key); if (!div) return;
+  div.querySelectorAll('.subtabs button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  div.querySelectorAll('.subview').forEach(v => v.classList.toggle('active', v.dataset.view === view));
+  const p = projects.find(x => x.key === key);
+  if (view === 'dash' && p) setTimeout(() => initProjectMap(p), 0);
+}
+
+// Wrap each project page: Dashboard | Line List
+projects.forEach(p => {
+  const div = document.getElementById('proj-' + p.key);
+  const all = llRowsFor(p);
+  LL[p.key] = { all, hasSub: all.some(r => r.sub), sort: { key:null, dir:'asc' } };
+  const dash = document.createElement('div');
+  dash.className = 'subview active'; dash.dataset.view = 'dash';
+  while (div.firstChild) dash.appendChild(div.firstChild);
+  const list = document.createElement('div');
+  list.className = 'subview'; list.dataset.view = 'list';
+  list.innerHTML = lineListHtml(p);
+  const nav = document.createElement('div');
+  nav.className = 'subtabs';
+  nav.innerHTML = `<button type="button" class="active" data-view="dash" onclick="showSubview('${p.key}','dash')">Dashboard</button>
+    <button type="button" data-view="list" onclick="showSubview('${p.key}','list')">Line List<span class="n">${all.length}</span></button>`;
+  div.append(nav, dash, list);
+  llRender(p.key);
+});
 
 function selectTab(key){
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.key === key));
